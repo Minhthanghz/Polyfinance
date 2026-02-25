@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chuyển tiền | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.2);
+            --green: #00ff88; --red: #ff3366;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 40px; }
+
+        #auth-guard { position: fixed; inset: 0; background: var(--bg-body); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .loader { width: 35px; height: 35px; border: 3px solid var(--border); border-top-color: var(--purple-neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        header { padding: 20px; display: flex; align-items: center; gap: 15px; background: rgba(18, 8, 43, 0.9); border-bottom: 1px solid var(--border); }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+
+        .container { padding: 20px; max-width: 500px; margin: 0 auto; }
+
+        .transfer-box { background: var(--bg-card); border-radius: 24px; padding: 20px; border: 1px solid var(--border); }
+
+        .form-group { margin-bottom: 20px; }
+        .label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .input-wrapper { position: relative; background: rgba(0,0,0,0.3); border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); padding: 12px; }
+        .input-wrapper input { background: transparent; border: none; color: #fff; width: 100%; font-size: 16px; outline: none; padding: 5px; }
+        .input-wrapper input::placeholder { color: #444; }
+
+        /* Asset Selector */
+        .asset-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+        .asset-chip { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.3s; }
+        .asset-chip.active { background: var(--purple-neon); border-color: transparent; box-shadow: 0 0 15px var(--purple-glow); }
+        .asset-chip i { font-size: 16px; }
+        .asset-chip img { width: 18px; height: 18px; }
+
+        .balance-info { text-align: right; font-size: 11px; color: var(--accent-cyan); margin-top: 5px; font-family: 'Orbitron'; }
+
+        .btn-transfer { 
+            width: 100%; padding: 18px; border-radius: 18px; border: none;
+            background: linear-gradient(135deg, var(--purple-neon), #6e48aa);
+            color: white; font-family: 'Orbitron'; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px 15px var(--purple-glow); transition: 0.3s; margin-top: 10px;
+        }
+        .btn-transfer:disabled { opacity: 0.4; filter: grayscale(1); }
+
+        .info-card { margin-top: 20px; padding: 15px; background: rgba(0,210,255,0.05); border-radius: 12px; font-size: 11px; color: var(--text-dim); line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-guard"><div class="loader"></div></div>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 18px; letter-spacing: 1px;">CHUYỂN TIỀN</h2>
+    </header>
+
+    <div class="container">
+        <div class="transfer-box">
+            <span class="label">Chọn tài sản</span>
+            <div class="asset-selector">
+                <div class="asset-chip active" onclick="selectAsset('USDT')" id="chip-usdt">
+                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" alt="USDT">
+                    <span>USDT</span>
+                </div>
+                <div class="asset-chip" onclick="selectAsset('PFT')" id="chip-pft">
+                    <i class="fas fa-gem" style="color:#fff"></i>
+                    <span>PFT</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <span class="label">UID Người nhận</span>
+                <div class="input-wrapper">
+                    <input type="number" id="receiver-uid" placeholder="Nhập UID người nhận..." oninput="validateUID()">
+                </div>
+                <div id="uid-status" style="font-size: 10px; margin-top: 5px; min-height: 12px;"></div>
+            </div>
+
+            <div class="form-group">
+                <span class="label">Số lượng chuyển</span>
+                <div class="input-wrapper">
+                    <input type="number" id="transfer-amount" placeholder="0.00" oninput="checkBalance()">
+                </div>
+                <div class="balance-info">Khả dụng: <span id="max-balance">0.00</span></div>
+            </div>
+
+            <button class="btn-transfer" id="btn-submit" disabled onclick="handleTransfer()">XÁC NHẬN GỬI</button>
+        </div>
+
+        <div class="info-card">
+            <i class="fas fa-exclamation-triangle" style="color:var(--accent-cyan)"></i> 
+            <b>Lưu ý:</b> Việc chuyển tiền nội bộ qua UID là tức thì và không thể hoàn tác. Vui lòng kiểm tra kỹ UID người nhận trước khi thực hiện. Phí chuyển: 0%.
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let selectedAsset = 'USDT';
+        let balances = { usdt: 0, pft: 0 };
+
+        async function initTransfer() {
+            try {
+                const res = await fetch(`${API_BASE}/api/user/data`);
+                const data = await res.json();
+
+                // Chống NaN
+                balances.usdt = parseFloat(data.usdt_balance) || 0;
+                balances.pft = parseFloat(data.pft_balance) || 0;
+
+                document.getElementById('auth-guard').style.display = 'none';
+                updateBalanceUI();
+            } catch (e) { console.error("Lỗi tải dữ liệu"); }
+        }
+
+        function selectAsset(asset) {
+            selectedAsset = asset;
+            document.getElementById('chip-usdt').classList.toggle('active', asset === 'USDT');
+            document.getElementById('chip-pft').classList.toggle('active', asset === 'PFT');
+            updateBalanceUI();
+            checkBalance();
+        }
+
+        function updateBalanceUI() {
+            const display = document.getElementById('max-balance');
+            if (selectedAsset === 'USDT') {
+                display.innerText = balances.usdt.toFixed(2) + " USDT";
+            } else {
+                display.innerText = balances.pft.toFixed(4) + " PFT";
+            }
+        }
+
+        function checkBalance() {
+            const amount = parseFloat(document.getElementById('transfer-amount').value) || 0;
+            const uid = document.getElementById('receiver-uid').value;
+            const btn = document.getElementById('btn-submit');
+            const max = selectedAsset === 'USDT' ? balances.usdt : balances.pft;
+
+            if (amount > 0 && amount <= max && uid.length >= 6) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        async function validateUID() {
+            const uid = document.getElementById('receiver-uid').value;
+            const status = document.getElementById('uid-status');
+
+            if (uid.length >= 6) {
+                status.innerText = "🔍 Đang kiểm tra UID...";
+                status.style.color = "var(--accent-cyan)";
+
+                try {
+                    const res = await fetch(`${API_BASE}/api/user/check-uid?uid=${uid}`, {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    });
+                    const result = await res.json();
+                    if (result.found) {
+                        status.innerText = `✅ Người nhận: ${result.name}`;
+                        status.style.color = "var(--green)";
+                    } else {
+                        status.innerText = "❌ Không tìm thấy UID này";
+                        status.style.color = "var(--red)";
+                    }
+                } catch (e) {
+                    status.innerText = "⚠️ Lỗi kiểm tra UID";
+                }
+                checkBalance();
+            } else {
+                status.innerText = "";
+            }
+        }
+
+        async function handleTransfer() {
+            const amount = document.getElementById('transfer-amount').value;
+            const uid = document.getElementById('receiver-uid').value;
+
+            if (!confirm(`Bạn chắc chắn muốn chuyển ${amount} ${selectedAsset} cho UID ${uid}?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/transfer`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        toUid: uid,
+                        amount: amount,
+                        asset: selectedAsset
+                    })
+                });
+
+                const result = await res.json();
+                if (res.ok) {
+                    alert("Chuyển tiền thành công!");
+                    if (result.newBalance !== undefined) {
+                        if (selectedAsset === 'USDT') balances.usdt = result.newBalance;
+                        else balances.pft = result.newBalance;
+                        updateBalanceUI();
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    alert(result.message || "Giao dịch thất bại!");
+                }
+            } catch (e) {
+                alert("Lỗi kết nối máy chủ");
+            }
+        }
+
+        initTransfer();
+    </script>
+</body>
+</html>

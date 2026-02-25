@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Đăng nhập & Đăng ký | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.5); --text-main: #ffffff;
+            --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body { 
+            font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); 
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background-image: radial-gradient(circle at 50% -20%, #251652, var(--bg-body));
+        }
+
+        .auth-container { width: 92%; max-width: 400px; background: var(--bg-card); border-radius: 24px; border: 1px solid var(--border); padding: 35px 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
+
+        .logo-section { text-align: center; margin-bottom: 30px; }
+        .logo-section h1 { font-family: 'Orbitron'; font-size: 26px; letter-spacing: 2px; text-shadow: 0 0 10px var(--purple-glow); }
+        .logo-section span { color: var(--purple-neon); }
+
+        .tab-switcher { display: flex; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 5px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-dim); font-family: 'Orbitron'; font-size: 11px; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .tab-btn.active { background: var(--purple-neon); color: white; box-shadow: 0 4px 15px var(--purple-glow); }
+
+        .auth-form { display: none; }
+        .auth-form.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .input-field { position: relative; margin-bottom: 15px; }
+        .input-field i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--purple-neon); font-size: 14px; }
+        .input-field input { width: 100%; padding: 14px 15px 14px 45px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 14px; transition: 0.3s; }
+        .input-field input:focus { border-color: var(--purple-neon); box-shadow: 0 0 10px var(--purple-glow); }
+
+        .btn-action { width: 100%; padding: 16px; background: var(--purple-neon); border: none; border-radius: 12px; color: white; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .alert { padding: 12px; border-radius: 10px; font-size: 12px; margin-bottom: 15px; display: none; text-align: center; }
+        .alert-error { background: rgba(255, 51, 102, 0.1); color: #ff3366; border: 1px solid rgba(255, 51, 102, 0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="logo-section">
+            <h1>POLY<span>FINANCE</span></h1>
+            <p style="font-size: 10px; color: var(--text-dim); margin-top: 5px;">MẠNG LƯỚI TÀI CHÍNH PHI TẬP TRUNG</p>
+        </div>
+
+        <div class="tab-switcher">
+            <button class="tab-btn active" onclick="switchTab('login', this)">ĐĂNG NHẬP</button>
+            <button class="tab-btn" onclick="switchTab('register', this)">ĐĂNG KÝ</button>
+        </div>
+
+        <div id="auth-alert" class="alert alert-error"></div>
+
+        <form id="login-form" class="auth-form active" onsubmit="handleAuth(event, 'login')">
+            <div class="input-field">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="login-email" placeholder="Địa chỉ Email" required>
+            </div>
+            <div class="input-field">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="login-pass" placeholder="Mật khẩu" required>
+            </div>
+            <button type="submit" class="btn-action">ĐĂNG NHẬP NGAY</button>
+        </form>
+
+        <form id="register-form" class="auth-form" onsubmit="handleAuth(event, 'register')">
+            <div class="input-field">
+                <i class="fas fa-user"></i>
+                <input type="text" id="reg-name" placeholder="Họ và tên của bạn" required>
+            </div>
+            <div class="input-field">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="reg-email" placeholder="Địa chỉ Email" required>
+            </div>
+            <div class="input-field">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="reg-pass" placeholder="Mật khẩu (ít nhất 6 ký tự)" required>
+            </div>
+            <div class="input-field">
+                <i class="fas fa-users"></i>
+                <input type="text" id="reg-ref" placeholder="Mã giới thiệu (Nếu có)">
+            </div>
+            <button type="submit" class="btn-action">TẠO TÀI KHOẢN</button>
+        </form>
+
+        <p style="text-align: center; margin-top: 25px; font-size: 11px; color: var(--text-dim);">
+            Quên mật khẩu? <a href="#" style="color: var(--purple-neon); text-decoration: none;">Khôi phục ngay</a>
+        </p>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // Tự động kiểm tra nếu đã đăng nhập
+        if (localStorage.getItem('token')) {
+            window.location.href = 'index.html';
+        }
+
+        // Tự động lấy Ref từ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
+        if (refCode) {
+            document.getElementById('reg-ref').value = refCode;
+            switchTab('register', document.querySelectorAll('.tab-btn')[1]);
+        }
+
+        function switchTab(type, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(`${type}-form`).classList.add('active');
+            document.getElementById('auth-alert').style.display = 'none';
+        }
+
+        async function handleAuth(e, type) {
+            e.preventDefault();
+            const alertBox = document.getElementById('auth-alert');
+            const btn = e.target.querySelector('button');
+
+            alertBox.style.display = 'none';
+            btn.disabled = true;
+            btn.innerText = "ĐANG XỬ LÝ...";
+
+            const payload = type === 'login' ? {
+                email: document.getElementById('login-email').value,
+                pass: document.getElementById('login-pass').value
+            } : {
+                name: document.getElementById('reg-name').value,
+                email: document.getElementById('reg-email').value,
+                pass: document.getElementById('reg-pass').value,
+                ref: document.getElementById('reg-ref').value
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/${type}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // LƯU TOKEN VÀO LOCALSTORAGE - QUAN TRỌNG ĐỂ SYNC VỚI INDEX.JS
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('uid', data.uid);
+                    window.location.href = 'index.html';
+                } else {
+                    alertBox.innerText = data.message || "Lỗi hệ thống!";
+                    alertBox.style.display = 'block';
+                }
+            } catch (err) {
+                alertBox.innerText = "Không thể kết nối máy chủ!";
+                alertBox.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = type === 'login' ? "ĐĂNG NHẬP NGAY" : "TẠO TÀI KHOẢN";
+            }
+        }
+    </script>
+</body>
+</html>

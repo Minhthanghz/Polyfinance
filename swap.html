@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hoán đổi | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.2);
+            --green: #00ff88;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 40px; }
+
+        #auth-guard { position: fixed; inset: 0; background: var(--bg-body); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .loader { width: 35px; height: 35px; border: 3px solid var(--border); border-top-color: var(--purple-neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        header { padding: 20px; display: flex; align-items: center; gap: 15px; background: rgba(18, 8, 43, 0.9); border-bottom: 1px solid var(--border); }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+
+        .swap-container { padding: 20px; max-width: 500px; margin: 0 auto; }
+
+        /* --- SWAP BOX --- */
+        .swap-box { background: var(--bg-card); border-radius: 24px; padding: 20px; border: 1px solid var(--border); position: relative; }
+
+        .input-card { background: rgba(0,0,0,0.4); border-radius: 18px; padding: 15px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .input-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 12px; color: var(--text-dim); }
+
+        .input-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .input-row input { background: transparent; border: none; color: #fff; font-family: 'Orbitron'; font-size: 22px; outline: none; width: 55%; }
+
+        .token-info { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); min-width: 100px; justify-content: center;}
+
+        /* Token Icons */
+        .icon-pft { color: var(--purple-neon); font-size: 18px; filter: drop-shadow(0 0 5px var(--purple-glow)); }
+        .img-usdt { width: 20px; height: 20px; border-radius: 50%; }
+
+        .switch-btn { 
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            width: 42px; height: 42px; background: #1a0b3d; border: 2px solid var(--purple-neon);
+            border-radius: 12px; color: var(--purple-neon); display: flex; align-items: center; justify-content: center;
+            z-index: 2; cursor: pointer; transition: 0.4s;
+        }
+        .switch-btn:active { transform: translate(-50%, -50%) rotate(180deg); }
+
+        .rate-info { margin: 15px 5px; font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between; font-family: 'Orbitron'; }
+
+        .btn-swap { 
+            width: 100%; padding: 18px; border-radius: 18px; border: none;
+            background: linear-gradient(135deg, var(--purple-neon), #6e48aa);
+            color: white; font-family: 'Orbitron'; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px 15px var(--purple-glow); transition: 0.3s;
+        }
+        .btn-swap:disabled { opacity: 0.4; filter: grayscale(1); }
+
+    </style>
+</head>
+<body>
+
+    <div id="auth-guard"><div class="loader"></div></div>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 18px; letter-spacing: 1px;">QUY ĐỔI</h2>
+    </header>
+
+    <div class="swap-container">
+        <div class="swap-box">
+            <div class="input-card" id="card-from">
+                <div class="input-header">
+                    <span>Gửi đi</span>
+                    <span>Số dư: <b id="from-balance">0.00</b></span>
+                </div>
+                <div class="input-row">
+                    <input type="number" id="input-from" placeholder="0.00" oninput="calculateSwap()">
+                    <div class="token-info" id="token-from">
+                        </div>
+                </div>
+            </div>
+
+            <div class="switch-btn" onclick="switchAssets()">
+                <i class="fas fa-exchange-alt fa-rotate-90"></i>
+            </div>
+
+            <div class="input-card" id="card-to">
+                <div class="input-header">
+                    <span>Nhận về</span>
+                    <span>Số dư: <b id="to-balance">0.00</b></span>
+                </div>
+                <div class="input-row">
+                    <input type="number" id="input-to" placeholder="0.00" readonly>
+                    <div class="token-info" id="token-to">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rate-info">
+            <span>Tỷ giá thực tế</span>
+            <span id="current-rate">Đang tải giá...</span>
+        </div>
+
+        <button class="btn-swap" id="swap-btn" disabled onclick="executeSwap()">XÁC NHẬN</button>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let isUsdtToPft = true;
+        let dogePrice = 0;
+        let balances = { usdt: 0, pft: 0 };
+
+        const USDT_HTML = `<img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="img-usdt"> <span>USDT</span>`;
+        const PFT_HTML = `<i class="fas fa-gem icon-pft"></i> <span>PFT</span>`;
+
+        async function initSwap() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'login-register.html'; return; }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/data`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                // Khắc phục lỗi NaN bằng cách ép kiểu và mặc định là 0
+                balances.usdt = parseFloat(data.usdt_balance) || 0;
+                balances.pft = parseFloat(data.pft_balance) || 0;
+
+                document.getElementById('auth-guard').style.display = 'none';
+                updateUI();
+                startPriceFeed();
+            } catch (e) { console.error("Lỗi đồng bộ dữ liệu"); }
+        }
+
+        function updateUI() {
+            const tokenFrom = document.getElementById('token-from');
+            const tokenTo = document.getElementById('token-to');
+            const balFrom = document.getElementById('from-balance');
+            const balTo = document.getElementById('to-balance');
+
+            if (isUsdtToPft) {
+                tokenFrom.innerHTML = USDT_HTML;
+                tokenTo.innerHTML = PFT_HTML;
+                balFrom.innerText = balances.usdt.toLocaleString(undefined, {minimumFractionDigits: 2});
+                balTo.innerText = balances.pft.toLocaleString(undefined, {minimumFractionDigits: 4});
+            } else {
+                tokenFrom.innerHTML = PFT_HTML;
+                tokenTo.innerHTML = USDT_HTML;
+                balFrom.innerText = balances.pft.toLocaleString(undefined, {minimumFractionDigits: 4});
+                balTo.innerText = balances.usdt.toLocaleString(undefined, {minimumFractionDigits: 2});
+            }
+            calculateSwap();
+        }
+
+        function startPriceFeed() {
+            // Lấy giá DOGE làm giá tham chiếu cho PFT
+            const ws = new WebSocket('wss://stream.binance.com:9443/ws/dogeusdt@ticker');
+            ws.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                dogePrice = parseFloat(data.c) || 0;
+
+                const rateLabel = isUsdtToPft 
+                    ? `1 USDT ≈ ${(1/dogePrice).toFixed(2)} PFT` 
+                    : `1 PFT ≈ ${dogePrice.toFixed(4)} USDT`;
+                document.getElementById('current-rate').innerText = rateLabel;
+                calculateSwap();
+            };
+        }
+
+        function calculateSwap() {
+            const val = parseFloat(document.getElementById('input-from').value) || 0;
+            const output = document.getElementById('input-to');
+            const btn = document.getElementById('swap-btn');
+
+            if (val <= 0 || dogePrice === 0) {
+                output.value = "";
+                btn.disabled = true;
+                return;
+            }
+
+            const result = isUsdtToPft ? val / dogePrice : val * dogePrice;
+            output.value = result.toFixed(isUsdtToPft ? 4 : 2);
+
+            // Kiểm tra số dư khả dụng
+            const currentMax = isUsdtToPft ? balances.usdt : balances.pft;
+            if (val > currentMax) {
+                btn.disabled = true;
+                btn.innerText = "SỐ DƯ KHÔNG ĐỦ";
+            } else {
+                btn.disabled = false;
+                btn.innerText = "XÁC NHẬN";
+            }
+        }
+
+        function switchAssets() {
+            isUsdtToPft = !isUsdtToPft;
+            document.getElementById('input-from').value = "";
+            document.getElementById('input-to').value = "";
+            updateUI();
+        }
+
+        async function executeSwap() {
+            const val = document.getElementById('input-from').value;
+            if (!confirm(`Xác nhận hoán đổi ${val} ${isUsdtToPft ? 'USDT' : 'PFT'}?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/swap`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        amount: val,
+                        direction: isUsdtToPft ? 'USDT_TO_PFT' : 'PFT_TO_USDT',
+                        price: dogePrice
+                    })
+                });
+                if (res.ok) { alert("Hoán đổi thành công!"); location.reload(); }
+                else { 
+                    const err = await res.json();
+                    alert(err.message || "Lỗi hệ thống, vui lòng thử lại!"); 
+                }
+            } catch (e) { alert("Lỗi kết nối máy chủ"); }
+        }
+
+        initSwap();
+    </script>
+</body>
+</html>

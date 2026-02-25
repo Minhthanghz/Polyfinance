@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gửi lãi PFT | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.2);
+            --green: #00ff88;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 40px; }
+
+        #auth-guard { position: fixed; inset: 0; background: var(--bg-body); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .loader { width: 35px; height: 35px; border: 3px solid var(--border); border-top-color: var(--purple-neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        header { padding: 20px; display: flex; align-items: center; gap: 15px; background: rgba(18, 8, 43, 0.9); border-bottom: 1px solid var(--border); }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+
+        .container { padding: 20px; max-width: 500px; margin: 0 auto; }
+
+        /* --- STAKING CARD --- */
+        .staking-card { background: linear-gradient(135deg, var(--bg-card), #1a0b3d); border-radius: 24px; padding: 25px; border: 1px solid var(--border); position: relative; overflow: hidden; margin-bottom: 20px; }
+        .staking-card::after { content: '\f3a5'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: -10px; bottom: -10px; font-size: 100px; color: var(--purple-neon); opacity: 0.05; }
+
+        .apr-badge { background: var(--green); color: #000; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; font-family: 'Orbitron'; }
+        .pft-logo-large { font-size: 40px; color: var(--purple-neon); margin-bottom: 15px; filter: drop-shadow(0 0 10px var(--purple-glow)); }
+
+        /* --- INPUT AREA --- */
+        .input-box { background: rgba(0,0,0,0.3); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .balance-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-bottom: 10px; }
+        .input-row { display: flex; align-items: center; gap: 15px; }
+        .input-row input { background: transparent; border: none; color: #fff; font-family: 'Orbitron'; font-size: 24px; outline: none; width: 100%; }
+
+        /* --- PACKAGE SELECTOR --- */
+        .package-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .package-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px 5px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .package-item.active { background: var(--purple-neon); border-color: transparent; box-shadow: 0 5px 15px var(--purple-glow); }
+        .package-item span { display: block; font-size: 14px; font-weight: bold; font-family: 'Orbitron'; }
+        .package-item small { font-size: 9px; color: var(--text-dim); }
+        .package-item.active small { color: #fff; opacity: 0.8; }
+
+        .est-profit { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; }
+
+        .btn-stake { width: 100%; padding: 18px; border-radius: 18px; border: none; background: linear-gradient(135deg, var(--purple-neon), #6e48aa); color: white; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px var(--purple-glow); transition: 0.3s; }
+        .btn-stake:disabled { opacity: 0.4; filter: grayscale(1); }
+    </style>
+</head>
+<body>
+
+    <div id="auth-guard"><div class="loader"></div></div>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 18px; letter-spacing: 1px;">PFT STAKING</h2>
+    </header>
+
+    <div class="container">
+        <div class="staking-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 12px; color: var(--text-dim);">Lợi nhuận ước tính</span>
+                <span class="apr-badge">Lên đến 12%/năm</span>
+            </div>
+            <div class="pft-logo-large"><i class="fas fa-gem"></i></div>
+            <p style="font-size: 13px; color: var(--text-dim);">Tối ưu tài sản của bạn bằng cách khóa PFT để nhận thưởng định kỳ.</p>
+        </div>
+
+        <div class="input-box">
+            <div class="balance-row">
+                <span>Số lượng gửi</span>
+                <span>Số dư PFT: <b id="max-balance">0.0000</b></span>
+            </div>
+            <div class="input-row">
+                <input type="number" id="stake-amount" placeholder="0.00" oninput="calculateProfit()">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-gem" style="color:var(--purple-neon)"></i>
+                    <b style="font-family:'Orbitron'; font-size:14px;">PFT</b>
+                </div>
+            </div>
+
+            <div class="package-grid">
+                <div class="package-item active" onclick="selectPackage(30, 2, this)">
+                    <span>30 Ngày</span>
+                    <small>+2% lãi</small>
+                </div>
+                <div class="package-item" onclick="selectPackage(90, 5, this)">
+                    <span>90 Ngày</span>
+                    <small>+5% lãi</small>
+                </div>
+                <div class="package-item" onclick="selectPackage(180, 12, this)">
+                    <span>180 Ngày</span>
+                    <small>+12% lãi</small>
+                </div>
+            </div>
+
+            <div class="est-profit">
+                <span>Lãi suất dự kiến:</span>
+                <b style="color:var(--green)" id="profit-val">0.00 PFT</b>
+            </div>
+
+            <button class="btn-stake" id="btn-submit" disabled onclick="executeStake()">BẮT ĐẦU GỬI LÃI</button>
+        </div>
+
+        <div style="margin-top:25px; padding:15px; background:rgba(255,255,255,0.03); border-radius:12px; font-size:11px; color:var(--text-dim); line-height:1.6;">
+            <i class="fas fa-info-circle"></i> &nbsp; 
+            <b>Quy tắc Staking:</b> Tài sản sẽ bị khóa trong thời gian đã chọn. Lãi suất được tính toán và trả về ví chính sau khi kết thúc chu kỳ. Việc rút trước hạn có thể phát sinh phí.
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let pftBalance = 0;
+        let currentRate = 2; // Lãi suất gói đang chọn (%)
+        let currentDays = 30;
+
+        async function initStaking() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) { window.location.href = 'login-register.html'; return; }
+
+                const res = await fetch(`${API_BASE}/api/user/data`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                // Sửa lỗi NaN: Ép kiểu số
+                pftBalance = parseFloat(data.pft_balance) || 0;
+
+                document.getElementById('auth-guard').style.display = 'none';
+                document.getElementById('max-balance').innerText = pftBalance.toFixed(4);
+                calculateProfit();
+            } catch (e) { console.error("Lỗi tải dữ liệu"); }
+        }
+
+        function selectPackage(days, rate, el) {
+            currentDays = days;
+            currentRate = rate;
+
+            document.querySelectorAll('.package-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+
+            calculateProfit();
+        }
+
+        function calculateProfit() {
+            const amount = parseFloat(document.getElementById('stake-amount').value) || 0;
+            const profit = (amount * currentRate) / 100;
+
+            document.getElementById('profit-val').innerText = profit.toFixed(4) + " PFT";
+
+            const btn = document.getElementById('btn-submit');
+            if (amount > 0 && amount <= pftBalance) {
+                btn.disabled = false;
+                btn.innerText = "BẮT ĐẦU GỬI LÃI";
+            } else {
+                btn.disabled = true;
+                btn.innerText = amount > pftBalance ? "SỐ DƯ KHÔNG ĐỦ" : "NHẬP SỐ LƯỢNG";
+            }
+        }
+
+        async function executeStake() {
+            const amount = document.getElementById('stake-amount').value;
+            if (!confirm(`Xác nhận khóa ${amount} PFT trong ${currentDays} ngày?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/staking/create`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ amount, days: currentDays, rate: currentRate })
+                });
+
+                if (res.ok) {
+                    alert("Gửi lãi thành công!");
+                    location.reload();
+                } else {
+                    const err = await res.json();
+                    alert(err.message || "Lỗi giao dịch.");
+                }
+            } catch (e) { alert("Lỗi kết nối máy chủ."); }
+        }
+
+        initStaking();
+    </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ví Tiền | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.2);
+            --green: #00ff88; --red: #ff3366;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 100px; }
+
+        #auth-guard { position: fixed; inset: 0; background: var(--bg-body); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .loader { width: 35px; height: 35px; border: 3px solid var(--border); border-top-color: var(--purple-neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        header { padding: 30px 20px; text-align: center; background: linear-gradient(to bottom, #1a0b3d, var(--bg-body)); border-bottom: 1px solid var(--border); }
+        .user-avatar { width: 65px; height: 65px; background: var(--purple-neon); border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid var(--accent-cyan); box-shadow: 0 0 15px var(--purple-glow); }
+
+        .balance-section { padding: 25px; text-align: center; }
+        .balance-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+        .balance-value { font-family: 'Orbitron'; font-size: 30px; font-weight: bold; margin: 8px 0; }
+
+        .action-container { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
+        .btn-main { width: 100%; padding: 15px; border-radius: 14px; border: none; font-family: 'Orbitron'; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; text-decoration: none; }
+
+        .btn-kyc { background: var(--accent-cyan); color: #000; }
+        .btn-history { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border); }
+        .btn-logout { background: transparent; border: 1px solid var(--red); color: var(--red); margin-top: 10px; }
+
+        .section-title { padding: 0 20px; font-family: 'Orbitron'; font-size: 13px; margin: 25px 0 15px; color: var(--purple-neon); }
+        .asset-list { margin: 0 20px; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
+        .asset-item { display: flex; justify-content: space-between; align-items: center; padding: 18px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .asset-item:last-child { border: none; }
+        .asset-info { display: flex; align-items: center; gap: 12px; }
+        .asset-icon { width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+        /* --- NAV BAR CHUẨN --- */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: rgba(12, 5, 29, 0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); backdrop-filter: blur(20px); z-index: 2000; }
+        .nav-link { text-decoration: none; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; width: 20%; font-size: 10px; gap: 5px; }
+        .nav-link i { font-size: 18px; }
+        .nav-link.active { color: var(--purple-neon); }
+        .nav-center { position: relative; top: -20px; width: 55px; height: 55px; background: var(--purple-neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px var(--purple-glow); color: white !important; border: 4px solid var(--bg-body); font-size: 22px !important; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-guard"><div class="loader"></div></div>
+
+    <header>
+        <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+        <h3 id="user-uid" style="font-family:'Orbitron'; font-size:15px;">UID: ---</h3>
+        <p id="user-email" style="font-size:12px; color:var(--text-dim); margin-top:5px;">đang tải...</p>
+    </header>
+
+    <div class="balance-section">
+        <span class="balance-label">Tổng số dư ước tính</span>
+        <div class="balance-value">$<span id="total-usd">0.00</span></div>
+    </div>
+
+    <div class="action-container">
+        <a href="kyc.html" class="btn-main btn-kyc" id="kyc-btn">
+            <i class="fas fa-id-card"></i> XÁC MINH DANH TÍNH (KYC)
+        </a>
+
+        <a href="history.html" class="btn-main btn-history">
+            <i class="fas fa-history"></i> LỊCH SỬ GIAO DỊCH
+        </a>
+
+        <button class="btn-main btn-logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> ĐĂNG XUẤT
+        </button>
+    </div>
+
+    <h3 class="section-title">VÍ TÀI SẢN</h3>
+    <div class="asset-list">
+        <div class="asset-item">
+            <div class="asset-info">
+                <div class="asset-icon" style="background:rgba(0,255,136,0.1); color:var(--green);"><i class="fas fa-dollar-sign"></i></div>
+                <div><b>USDT</b><span style="display:block; font-size:11px; color:var(--text-dim)">Tether US</span></div>
+            </div>
+            <b style="font-family:'Orbitron'" id="usdt-val">0.00</b>
+        </div>
+        <div class="asset-item">
+            <div class="asset-info">
+                <div class="asset-icon" style="background:rgba(157,80,187,0.1); color:var(--purple-neon);"><i class="fas fa-gem"></i></div>
+                <div><b>PFT</b><span style="display:block; font-size:11px; color:var(--text-dim)">PolyFinance Token</span></div>
+            </div>
+            <b style="font-family:'Orbitron'" id="pft-val">0.0000</b>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-link"><i class="fas fa-home"></i><span>Trang Chủ</span></a>
+        <a href="market.html" class="nav-link"><i class="fas fa-chart-line"></i><span>Thị Trường</span></a>
+        <a href="mining.html" class="nav-link nav-center"><i class="fas fa-bolt"></i></a>
+        <a href="affiliate.html" class="nav-link"><i class="fas fa-users"></i><span>Đội Ngũ</span></a>
+        <a href="profile.html" class="nav-link active"><i class="fas fa-wallet"></i><span>Ví Tiền</span></a>
+    </nav>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function initProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'login-register.html'; return; }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/data`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (data) {
+                    document.getElementById('auth-guard').style.display = 'none';
+                    document.getElementById('user-uid').innerText = `UID: ${data.uid || '---'}`;
+                    document.getElementById('user-email').innerText = data.email || '---';
+
+                    const usdt = parseFloat(data.usdt_balance) || 0;
+                    const pft = parseFloat(data.pft_balance) || 0;
+
+                    document.getElementById('usdt-val').innerText = usdt.toFixed(2);
+                    document.getElementById('pft-val').innerText = pft.toFixed(4);
+                    document.getElementById('total-usd').innerText = (usdt + (pft * 0.1)).toFixed(2);
+
+                    const kycBtn = document.getElementById('kyc-btn');
+                    if (data.kyc_status === 1) {
+                        kycBtn.innerHTML = '<i class="fas fa-check-circle"></i> ĐÃ XÁC MINH (KYC SUCCESS)';
+                        kycBtn.style.background = 'var(--green)';
+                        kycBtn.style.pointerEvents = 'none';
+                    } else if (data.kyc_status === 2) {
+                        kycBtn.innerHTML = '<i class="fas fa-hourglass-half"></i> ĐANG CHỜ PHÊ DUYỆT...';
+                        kycBtn.style.background = 'var(--text-dim)';
+                        kycBtn.style.pointerEvents = 'none';
+                    }
+                }
+            } catch (e) { console.error("Lỗi dữ liệu"); }
+        }
+
+        async function logout() {
+            if(confirm("Xác nhận đăng xuất?")) {
+                await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST' });
+                window.location.href = 'login-register.html';
+            }
+        }
+
+        initProfile();
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hỗ trợ | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-body: #060212;
+            --bg-card: #12082b;
+            --purple-neon: #9d50bb;
+            --accent-cyan: #00d2ff;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+            --border: rgba(157, 80, 187, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding-bottom: 40px;
+        }
+
+        header {
+            padding: 20px;
+            display: flex; align-items: center; gap: 15px;
+            background: rgba(18, 8, 43, 0.9);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+
+        .support-container { padding: 20px; }
+
+        /* --- CONTACT CARDS --- */
+        .contact-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 15px; margin-bottom: 30px;
+        }
+
+        .contact-card {
+            background: var(--bg-card);
+            border-radius: 15px; border: 1px solid var(--border);
+            padding: 20px; text-align: center;
+            text-decoration: none; color: white;
+            transition: 0.3s;
+        }
+        .contact-card:active { transform: scale(0.95); background: rgba(157, 80, 187, 0.1); }
+        .contact-card i { font-size: 28px; margin-bottom: 10px; color: var(--accent-cyan); }
+        .contact-card span { display: block; font-size: 13px; font-weight: 500; }
+
+        /* --- FAQ SECTION --- */
+        .section-title { font-family: 'Orbitron'; font-size: 14px; margin-bottom: 15px; color: var(--purple-neon); }
+        
+        .faq-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px; margin-bottom: 10px;
+            overflow: hidden; border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .faq-question {
+            padding: 15px; display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; font-size: 14px; font-weight: 500;
+        }
+
+        .faq-answer {
+            padding: 0 15px 15px; font-size: 13px; color: var(--text-dim);
+            line-height: 1.6; display: none;
+        }
+
+        .faq-item.active .faq-answer { display: block; }
+        .faq-item.active .faq-question i { transform: rotate(180deg); color: var(--purple-neon); }
+
+        /* --- TICKET BUTTON --- */
+        .btn-ticket {
+            width: 100%; padding: 16px; background: var(--purple-neon);
+            border: none; border-radius: 12px; color: white;
+            font-family: 'Orbitron'; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(157, 80, 187, 0.3);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="profile.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 18px;">Hỗ trợ</h2>
+    </header>
+
+    <div class="support-container">
+        <div class="contact-grid">
+            <a href="https://t.me/your_telegram" class="contact-card">
+                <i class="fab fa-telegram"></i>
+                <span>Telegram</span>
+            </a>
+            <a href="mailto:support@poly.finance" class="contact-card">
+                <i class="fas fa-envelope"></i>
+                <span>Email</span>
+            </a>
+        </div>
+
+        <h3 class="section-title">Câu hỏi thường gặp</h3>
+
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Làm sao để bắt đầu khai thác POL?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Bạn chỉ cần nạp USDT vào ví, sau đó truy cập mục "Máy đào" để thuê máy đào Poly-V1 hoặc các phiên bản cao cấp hơn. Hệ thống sẽ tự động đào POL cho bạn mỗi giây.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Thời gian rút tiền mất bao lâu?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Các lệnh rút tiền thường được xử lý trong vòng 5-30 phút. Trong trường hợp mạng lưới bận rộn, thời gian tối đa có thể lên tới 24 giờ.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Chính sách hoa hồng đại lý như thế nào?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Bạn sẽ nhận được 10% hoa hồng trên tổng số POL mà bạn bè của bạn khai thác được khi họ đăng ký qua link giới thiệu của bạn.
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-ticket" onclick="openLiveChat()">CHAT TRỰC TUYẾN</button>
+    </div>
+
+    <script>
+        function toggleFaq(element) {
+            element.parentElement.classList.toggle('active');
+        }
+
+        function openLiveChat() {
+            alert("Đang kết nối với nhân viên hỗ trợ... Vui lòng giữ kết nối!");
+            // Bạn có thể tích hợp tawk.to hoặc link Telegram trực tiếp ở đây
+        }
+    </script>
+</body>
+</html>
