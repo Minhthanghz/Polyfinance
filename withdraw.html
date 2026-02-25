@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rút Tiền | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #0a051d; --bg-card: #160d35; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.5); --text-main: #ffffff;
+            --text-dim: #b0b0b0; --border: rgba(157, 80, 187, 0.3); --red: #ff3366; --green: #00ff88;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); min-height: 100vh; }
+
+        header { padding: 20px; background: rgba(22, 13, 53, 0.95); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+
+        .container { padding: 20px; }
+
+        /* --- Balance Card --- */
+        .balance-card { background: linear-gradient(135deg, #1d114a 0%, #11082b 100%); border-radius: 20px; padding: 20px; border: 1px solid var(--border); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .balance-label { font-size: 12px; color: var(--text-dim); font-family: 'Orbitron'; }
+        .balance-value { font-size: 20px; font-weight: bold; color: var(--green); font-family: 'Orbitron'; margin-top: 5px; }
+
+        /* --- Form Rút Tiền --- */
+        .withdraw-form { background: var(--bg-card); border-radius: 25px; padding: 25px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 12px; color: var(--purple-neon); font-family: 'Orbitron'; margin-bottom: 8px; }
+        .input-wrapper { position: relative; }
+        .input-wrapper input { width: 100%; padding: 15px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; font-size: 14px; transition: 0.3s; }
+        .input-wrapper input:focus { border-color: var(--purple-neon); box-shadow: 0 0 10px var(--purple-glow); }
+        .input-wrapper span { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: bold; color: var(--text-dim); }
+
+        .fee-info { font-size: 11px; color: var(--text-dim); margin-top: 10px; display: flex; justify-content: space-between; }
+
+        .btn-withdraw { width: 100%; padding: 18px; background: var(--purple-neon); border: none; border-radius: 15px; color: white; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; margin-top: 25px; box-shadow: 0 5px 20px var(--purple-glow); transition: 0.3s; }
+        .btn-withdraw:active { transform: scale(0.98); }
+
+        /* --- Lịch sử lệnh --- */
+        .history-title { font-family: 'Orbitron'; font-size: 14px; margin: 30px 0 15px; display: flex; align-items: center; gap: 10px; }
+        .history-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 4px solid var(--text-dim); display: flex; justify-content: space-between; align-items: center; }
+        .status-pending { color: var(--purple-neon); font-size: 11px; font-weight: bold; }
+        .status-success { color: var(--green); font-size: 11px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="profile.html" class="back-btn"><i class="fas fa-chevron-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 16px;">RÚT USDT</h2>
+    </header>
+
+    <div class="container">
+
+        <div class="balance-card">
+            <div>
+                <p class="balance-label">SỐ DƯ KHẢ DỤNG</p>
+                <p class="balance-value" id="user-usdt">0.00 <small>USDT</small></p>
+            </div>
+            <i class="fas fa-wallet" style="font-size: 30px; opacity: 0.2;"></i>
+        </div>
+
+        <div class="withdraw-form">
+            <div class="input-group">
+                <label>ĐỊA CHỈ VÍ NHẬN (BEP20)</label>
+                <div class="input-wrapper">
+                    <input type="text" id="withdraw-address" placeholder="0x...">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>SỐ LƯỢNG RÚT</label>
+                <div class="input-wrapper">
+                    <input type="number" id="withdraw-amount" placeholder="Tối thiểu 10">
+                    <span>USDT</span>
+                </div>
+                <div class="fee-info">
+                    <span>Phí mạng lưới: 1.00 USDT</span>
+                    <span id="actual-receive">Thực nhận: 0.00</span>
+                </div>
+            </div>
+
+            <button class="btn-withdraw" onclick="sendWithdrawRequest()">GỬI YÊU CẦU RÚT TIỀN</button>
+        </div>
+
+        <h4 class="history-title"><i class="fas fa-history"></i> LỆNH RÚT GẦN ĐÂY</h4>
+        <div id="withdraw-history">
+            <p style="text-align: center; color: var(--text-dim); font-size: 12px; padding: 20px;">Chưa có yêu cầu nào.</p>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // Cập nhật số dư và thực nhận
+        async function loadProfile() {
+            const res = await fetch(`${API_BASE}/api/user/profile`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const user = await res.json();
+            document.getElementById('user-usdt').innerHTML = `${parseFloat(user.usdt_balance).toFixed(2)} <small>USDT</small>`;
+        }
+
+        document.getElementById('withdraw-amount').addEventListener('input', function() {
+            const val = parseFloat(this.value) || 0;
+            const receive = val > 1 ? val - 1 : 0;
+            document.getElementById('actual-receive').innerText = `Thực nhận: ${receive.toFixed(2)} USDT`;
+        });
+
+        // Gửi yêu cầu rút về Admin
+        async function sendWithdrawRequest() {
+            const address = document.getElementById('withdraw-address').value;
+            const amount = document.getElementById('withdraw-amount').value;
+
+            if(!address || !amount || amount < 10) {
+                return alert("Vui lòng nhập đúng địa chỉ và số tiền tối thiểu 10 USDT!");
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/withdraw-request`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ address, amount })
+                });
+
+                if(res.ok) {
+                    alert("Yêu cầu rút tiền đã được gửi! Admin sẽ phê duyệt trong vòng 24h.");
+                    location.reload();
+                } else {
+                    const err = await res.json();
+                    alert(err.message);
+                }
+            } catch (e) { alert("Lỗi kết nối hệ thống!"); }
+        }
+
+        // Load lịch sử (Đồng bộ với Admin)
+        async function loadHistory() {
+            const res = await fetch(`${API_BASE}/api/user/withdraw-history`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const data = await res.json();
+            if(data.length > 0) {
+                document.getElementById('withdraw-history').innerHTML = data.map(h => `
+                    <div class="history-item">
+                        <div>
+                            <p style="font-size: 13px; font-weight: bold;">-${h.amount} USDT</p>
+                            <p style="font-size: 10px; color: var(--text-dim);">${h.address.substring(0,10)}...</p>
+                        </div>
+                        <div class="${h.status === 0 ? 'status-pending' : 'status-success'}">
+                            ${h.status === 0 ? 'ĐANG CHỜ' : 'HOÀN TẤT'}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        loadProfile();
+        loadHistory();
+    </script>
+</body>
+</html>

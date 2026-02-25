@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Xác minh KYC | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.2);
+            --green: #00ff88; --red: #ff3366;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 40px; }
+
+        header { padding: 20px; display: flex; align-items: center; gap: 15px; background: rgba(18, 8, 43, 0.9); border-bottom: 1px solid var(--border); }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+
+        .container { padding: 20px; max-width: 500px; margin: 0 auto; }
+
+        /* --- TRẠNG THÁI --- */
+        .status-banner { padding: 20px; border-radius: 18px; text-align: center; margin-bottom: 25px; border: 1px solid var(--border); background: rgba(157, 80, 187, 0.05); }
+        .status-icon { font-size: 40px; color: var(--purple-neon); margin-bottom: 12px; filter: drop-shadow(0 0 10px var(--purple-glow)); }
+
+        /* --- FORM --- */
+        .kyc-box { background: var(--bg-card); border-radius: 24px; padding: 25px; border: 1px solid var(--border); }
+        .form-group { margin-bottom: 20px; }
+        .label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .input-wrapper { background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 12px; }
+        .input-wrapper input { background: transparent; border: none; color: #fff; width: 100%; font-size: 14px; outline: none; }
+
+        .upload-area { border: 2px dashed var(--border); border-radius: 15px; padding: 30px 15px; text-align: center; cursor: pointer; transition: 0.3s; margin-top: 5px; }
+        .upload-area:hover { border-color: var(--purple-neon); background: rgba(157, 80, 187, 0.05); }
+        .upload-area i { font-size: 30px; color: var(--text-dim); margin-bottom: 10px; }
+        .upload-area p { font-size: 11px; color: var(--text-dim); }
+
+        #preview-img { width: 100%; border-radius: 10px; margin-top: 15px; display: none; border: 1px solid var(--purple-neon); }
+
+        .btn-submit { 
+            width: 100%; padding: 18px; border-radius: 18px; border: none;
+            background: linear-gradient(135deg, var(--purple-neon), #6e48aa);
+            color: white; font-family: 'Orbitron'; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px 15px var(--purple-glow); transition: 0.3s; margin-top: 10px;
+        }
+        .btn-submit:disabled { opacity: 0.4; filter: grayscale(1); }
+
+        .info-card { margin-top: 25px; padding: 15px; background: rgba(0, 210, 255, 0.05); border-radius: 12px; font-size: 11px; color: var(--text-dim); line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="profile.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 18px;">XÁC MINH KYC</h2>
+    </header>
+
+    <div class="container" id="kyc-content">
+        <div class="status-banner" id="status-banner">
+            <div class="status-icon"><i class="fas fa-id-card"></i></div>
+            <h3 style="font-size: 16px; margin-bottom: 5px;">Yêu cầu xác minh</h3>
+            <p style="font-size: 12px; color: var(--text-dim);">Vui lòng cung cấp thông tin chính xác theo CMND/CCCD để được duyệt nhanh nhất.</p>
+        </div>
+
+        <div class="kyc-box" id="kyc-form">
+            <div class="form-group">
+                <span class="label">Họ và tên đầy đủ</span>
+                <div class="input-wrapper">
+                    <input type="text" id="fullname" placeholder="VÍ DỤ: NGUYEN VAN A">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <span class="label">Số CMND / CCCD / Hộ chiếu</span>
+                <div class="input-wrapper">
+                    <input type="text" id="id-number" placeholder="Nhập số định danh...">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <span class="label">Ảnh mặt trước CCCD</span>
+                <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Nhấn để tải ảnh lên (JPG, PNG)</p>
+                    <input type="file" id="file-input" hidden accept="image/*" onchange="previewFile()">
+                    <img id="preview-img" src="">
+                </div>
+            </div>
+
+            <button class="btn-submit" id="btn-kyc" onclick="submitKYC()">GỬI YÊU CẦU XÁC MINH</button>
+        </div>
+
+        <div class="info-card">
+            <i class="fas fa-shield-alt" style="color: var(--accent-cyan)"></i> 
+            <b>Cam kết bảo mật:</b> PolyFinance cam kết mọi thông tin định danh của bạn được mã hóa hoàn toàn và chỉ sử dụng cho mục đích xác thực tài khoản theo quy định của hệ thống.
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        const token = localStorage.getItem('token');
+
+        // 1. Kiểm tra trạng thái KYC hiện tại
+        async function checkKYCStatus() {
+            if (!token) { window.location.href = 'login-register.html'; return; }
+            try {
+                const res = await fetch(`${API_BASE}/api/user/data`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                const banner = document.getElementById('status-banner');
+                const form = document.getElementById('kyc-form');
+
+                if (data.kyc_status === 1) { // Thành công
+                    banner.innerHTML = `
+                        <div class="status-icon" style="color:var(--green)"><i class="fas fa-check-circle"></i></div>
+                        <h3 style="color:var(--green)">ĐÃ XÁC MINH</h3>
+                        <p style="font-size: 12px; color: var(--text-dim);">Tài khoản của bạn đã được bảo mật tối đa.</p>
+                    `;
+                    form.style.display = 'none';
+                } else if (data.kyc_status === 2) { // Đang chờ
+                    banner.innerHTML = `
+                        <div class="status-icon" style="color:var(--accent-cyan)"><i class="fas fa-hourglass-half"></i></div>
+                        <h3 style="color:var(--accent-cyan)">ĐANG PHÊ DUYỆT</h3>
+                        <p style="font-size: 12px; color: var(--text-dim);">Hệ thống đang kiểm tra thông tin của bạn. Vui lòng đợi từ 1-24h.</p>
+                    `;
+                    form.style.display = 'none';
+                }
+            } catch (e) { console.error("Lỗi đồng bộ KYC"); }
+        }
+
+        function previewFile() {
+            const file = document.getElementById('file-input').files[0];
+            const preview = document.getElementById('preview-img');
+            const reader = new FileReader();
+
+            reader.onloadend = function () {
+                preview.src = reader.result;
+                preview.style.display = "block";
+            }
+
+            if (file) reader.readAsDataURL(file);
+        }
+
+        async function submitKYC() {
+            const name = document.getElementById('fullname').value;
+            const idNum = document.getElementById('id-number').value;
+            const btn = document.getElementById('btn-kyc');
+
+            if (!name || !idNum) return alert("Vui lòng điền đầy đủ thông tin!");
+
+            btn.disabled = true;
+            btn.innerText = "ĐANG GỬI...";
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/kyc-submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ fullname: name, idNumber: idNum })
+                });
+
+                if (res.ok) {
+                    alert("Yêu cầu của bạn đã được gửi tới Admin!");
+                    location.reload();
+                } else {
+                    alert("Gửi yêu cầu thất bại. Vui lòng thử lại.");
+                    btn.disabled = false;
+                    btn.innerText = "GỬI YÊU CẦU XÁC MINH";
+                }
+            } catch (e) { alert("Lỗi kết nối máy chủ"); }
+        }
+
+        checkKYCStatus();
+    </script>
+</body>
+</html>

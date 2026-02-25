@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trang Chủ | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.2);
+            --green: #00ff88; --red: #ff3366;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 90px; }
+
+        #auth-guard { position: fixed; inset: 0; background: var(--bg-body); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .loader { width: 35px; height: 35px; border: 3px solid var(--border); border-top-color: var(--purple-neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(18, 8, 43, 0.9); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .avatar-small { width: 32px; height: 32px; background: var(--purple-neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 14px; border: 1px solid var(--accent-cyan); }
+
+        /* --- WALLET CARD --- */
+        .wallet-overview { margin: 20px; padding: 25px; background: linear-gradient(135deg, #1a0b3d, #060212); border-radius: 24px; border: 1px solid var(--purple-neon); position: relative; overflow: hidden; }
+        .wallet-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+        .total-balance { font-family: 'Orbitron'; font-size: 30px; font-weight: bold; margin: 10px 0; display: block; }
+
+        .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        .action-btn { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; text-align: center; text-decoration: none; color: #fff; font-size: 12px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .action-btn:active { transform: scale(0.95); background: var(--purple-neon); }
+
+        /* --- FEATURES GRID --- */
+        .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 0 20px; margin-bottom: 25px; }
+        .feature-item { text-align: center; text-decoration: none; color: inherit; }
+        .feature-icon { width: 48px; height: 48px; background: var(--bg-card); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 18px; color: var(--purple-neon); border: 1px solid var(--border); }
+        .feature-item span { font-size: 10px; font-weight: 500; color: var(--text-dim); }
+
+        /* --- MINI MARKET --- */
+        .section-title { padding: 0 20px; font-family: 'Orbitron'; font-size: 13px; color: var(--purple-neon); margin-bottom: 15px; }
+        .market-list { margin: 0 20px; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
+        .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .coin-row:last-child { border: none; }
+        .coin-meta { display: flex; align-items: center; gap: 12px; }
+        .coin-meta i { font-size: 18px; }
+        .coin-meta b { display: block; font-size: 14px; }
+        .coin-meta small { font-size: 10px; color: var(--text-dim); }
+        .coin-price { text-align: right; }
+        .price-val { font-family: 'Orbitron'; font-size: 13px; display: block; }
+        .price-change { font-size: 10px; font-weight: bold; }
+
+        /* --- FIXED NAV BAR (ĐỒNG BỘ CHUẨN) --- */
+        .nav-bar { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            height: 70px; background: rgba(12, 5, 29, 0.95); 
+            display: flex; justify-content: space-around; align-items: center; 
+            border-top: 1px solid var(--border); backdrop-filter: blur(20px); z-index: 2000;
+            padding: 0 5px;
+        }
+        .nav-link { 
+            text-decoration: none; color: var(--text-dim); 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center;
+            flex: 1; height: 100%; gap: 4px;
+        }
+        .nav-link i { font-size: 20px; height: 24px; display: flex; align-items: center; }
+        .nav-link span { font-size: 10px; font-weight: 500; white-space: nowrap; }
+        .nav-link.active { color: var(--purple-neon); }
+
+        .nav-center-wrapper { position: relative; width: 60px; height: 100%; display: flex; justify-content: center; }
+        .nav-center { 
+            position: absolute; top: -25px;
+            width: 54px; height: 54px; 
+            background: var(--purple-neon); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 5px 15px var(--purple-glow); 
+            color: white !important; border: 4px solid var(--bg-body); 
+            font-size: 22px !important; 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-guard"><div class="loader"></div></div>
+
+    <header>
+        <div class="user-info">
+            <div class="avatar-small" id="user-avatar">P</div>
+            <b id="user-uid" style="font-size: 14px;">UID: ---</b>
+        </div>
+        <i class="fas fa-bell" style="color: var(--text-dim);"></i>
+    </header>
+
+    <div class="wallet-overview">
+        <span class="wallet-label">Tổng tài sản (USDT)</span>
+        <span class="total-balance" id="usdt-balance">0.00</span>
+        <div class="quick-actions">
+            <a href="deposit.html" class="action-btn">Nạp tiền</a>
+            <a href="withdraw.html" class="action-btn">Rút tiền</a>
+            <a href="transfer.html" class="action-btn">Chuyển ví</a>
+        </div>
+    </div>
+
+    <div class="features-grid">
+        <a href="p2p.html" class="feature-item"><div class="feature-icon"><i class="fas fa-handshake"></i></div><span>P2P</span></a>
+        <a href="swap.html" class="feature-item"><div class="feature-icon"><i class="fas fa-random"></i></div><span>Swap</span></a>
+        <a href="staking.html" class="feature-item"><div class="feature-icon"><i class="fas fa-layer-group"></i></div><span>Gửi lãi</span></a>
+        <a href="kyc.html" class="feature-item"><div class="feature-icon"><i class="fas fa-user-shield"></i></div><span>Xác minh</span></a>
+    </div>
+
+    <h3 class="section-title">THỊ TRƯỜNG</h3>
+    <div class="market-list">
+        <div class="coin-row">
+            <div class="coin-meta">
+                <i class="fas fa-gem" style="color: var(--purple-neon);"></i>
+                <div><b>PFT</b><small>Poly Token</small></div>
+            </div>
+            <div class="coin-price">
+                <span class="price-val" id="price-PFT">0.0000</span>
+                <span class="price-change" id="change-PFT">0.00%</span>
+            </div>
+        </div>
+        <div class="coin-row">
+            <div class="coin-meta">
+                <i class="fab fa-bitcoin" style="color: #f3ba2f;"></i>
+                <div><b>BTC</b><small>Bitcoin</small></div>
+            </div>
+            <div class="coin-price">
+                <span class="price-val" id="price-BTC">0.00</span>
+                <span class="price-change" id="change-BTC">0.00%</span>
+            </div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-link active">
+            <i class="fas fa-home"></i>
+            <span>Trang Chủ</span>
+        </a>
+        <a href="market.html" class="nav-link">
+            <i class="fas fa-chart-line"></i>
+            <span>Thị Trường</span>
+        </a>
+        <div class="nav-center-wrapper">
+            <a href="mining.html" class="nav-center">
+                <i class="fas fa-bolt"></i>
+            </a>
+        </div>
+        <a href="affiliate.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Đội Ngũ</span>
+        </a>
+        <a href="profile.html" class="nav-link">
+            <i class="fas fa-wallet"></i>
+            <span>Ví Tiền</span>
+        </a>
+    </nav>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function initHome() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'login-register.html'; return; }
+
+            try {
+                // Kiểm tra đăng nhập
+                const authRes = await fetch(`${API_BASE}/api/auth/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const authData = await authRes.json();
+                if (!authData.loggedIn) { window.location.href = 'login-register.html'; return; }
+
+                document.getElementById('auth-guard').style.display = 'none';
+
+                // Lấy dữ liệu ví
+                const res = await fetch(`${API_BASE}/api/user/data`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data) {
+                    document.getElementById('user-uid').innerText = `UID: ${data.uid}`;
+                    document.getElementById('user-avatar').innerText = (data.uid + "").charAt(0);
+                    const bal = parseFloat(data.usdt_balance) || 0;
+                    document.getElementById('usdt-balance').innerText = bal.toLocaleString(undefined, {minimumFractionDigits: 2});
+                }
+                startWS();
+            } catch (e) { console.error("Lỗi khởi tạo Trang chủ"); }
+        }
+
+        function startWS() {
+            const symbols = ['dogeusdt', 'btcusdt'];
+            const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbols.map(s => s+'@ticker').join('/')}`);
+            ws.onmessage = (event) => {
+                const d = JSON.parse(event.data);
+                let s = d.s.toUpperCase().replace('USDT', '');
+                if (s === 'DOGE') s = 'PFT';
+                const pEl = document.getElementById(`price-${s}`);
+                const cEl = document.getElementById(`change-${s}`);
+                if (pEl) {
+                    const price = parseFloat(d.c);
+                    pEl.innerText = price > 1 ? price.toLocaleString() : price.toFixed(4);
+                    cEl.innerText = (parseFloat(d.P) >= 0 ? '+' : '') + d.P + '%';
+                    cEl.style.color = parseFloat(d.P) >= 0 ? '#00ff88' : '#ff3366';
+                }
+            };
+        }
+
+        initHome();
+    </script>
+</body>
+</html>

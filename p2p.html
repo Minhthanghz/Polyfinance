@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>P2P Trading | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #0a051d; --bg-card: #160d35; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.5); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #b0b0b0; --border: rgba(157, 80, 187, 0.3);
+            --green: #00ff88; --red: #ff3366;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); padding-bottom: 30px; }
+
+        header { padding: 15px 20px; background: rgba(22, 13, 53, 0.95); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100; }
+        .back-btn { color: white; text-decoration: none; font-size: 18px; }
+
+        .p2p-tabs { display: flex; background: var(--bg-card); margin: 15px 20px; border-radius: 12px; padding: 5px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; color: var(--text-dim); font-family: 'Orbitron'; font-size: 12px; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: var(--purple-neon); color: #fff; box-shadow: 0 0 10px var(--purple-glow); }
+
+        .merchant-list { padding: 0 20px; }
+        .merchant-card { background: var(--bg-card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .m-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .m-name { font-weight: 600; font-size: 14px; color: var(--accent-cyan); display: flex; align-items: center; gap: 5px; }
+        .price-val { font-family: 'Orbitron'; font-size: 24px; font-weight: bold; display: block; margin-top: 5px; }
+
+        .btn-trade { width: 100%; padding: 15px; border: none; border-radius: 12px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; }
+        .btn-buy { background: var(--green); color: #000; }
+        .btn-sell { background: var(--red); color: #fff; }
+
+        /* --- MODAL --- */
+        #p2p-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; padding: 20px; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .modal-content { background: var(--bg-card); padding: 25px; border-radius: 25px; width: 100%; max-width: 450px; border: 1px solid var(--purple-neon); max-height: 90vh; overflow-y: auto; }
+
+        .input-box { width: 100%; padding: 14px; background: #000; border: 1px solid var(--border); border-radius: 12px; color: #fff; margin: 10px 0; outline: none; font-family: 'Orbitron'; }
+        .calc-box { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px solid var(--purple-neon); }
+        .calc-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+
+        label { font-size: 11px; color: var(--purple-neon); font-family: 'Orbitron'; }
+
+        /* Copy button styles */
+        .copy-btn {
+            cursor: pointer;
+            margin-left: 8px;
+            color: var(--accent-cyan);
+            font-size: 13px;
+            transition: color 0.2s, transform 0.15s;
+            display: inline-block;
+        }
+        .copy-btn:active { transform: scale(1.3); }
+        .copy-btn.copied { color: var(--green); }
+
+        /* Toast notification */
+        .toast-msg {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(0, 210, 255, 0.95);
+            color: #000;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast-msg.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Bank info rows */
+        .bank-info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(157, 80, 187, 0.15);
+        }
+        .bank-info-row:last-child { border-bottom: none; }
+        .bank-info-row .info-label {
+            color: var(--text-dim);
+            font-size: 11px;
+            min-width: 90px;
+        }
+        .bank-info-row .info-value {
+            font-weight: 700;
+            font-size: 13px;
+            color: #fff;
+            flex: 1;
+            text-align: right;
+            margin-right: 5px;
+            word-break: break-all;
+        }
+        .bank-info-row .info-value.highlight {
+            color: var(--accent-cyan);
+            font-family: 'Orbitron';
+            font-size: 15px;
+            letter-spacing: 1px;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border);
+        }
+        .qr-section img {
+            width: 220px;
+            height: 220px;
+            border-radius: 12px;
+            border: 2px solid var(--purple-neon);
+            background: #fff;
+        }
+        .copy-all-btn {
+            display: block;
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 10px;
+            color: var(--accent-cyan);
+            font-family: 'Orbitron';
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .copy-all-btn:active { background: rgba(0, 210, 255, 0.25); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fas fa-chevron-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 16px;">P2P MARKET</h2>
+    </header>
+
+    <div class="p2p-tabs">
+        <button class="tab-btn active" id="tab-buy" onclick="loadP2P('BUY')">MUA</button>
+        <button class="tab-btn" id="tab-sell" onclick="loadP2P('SELL')">BÁN</button>
+    </div>
+
+    <div class="merchant-list" id="p2p-list"></div>
+
+    <div id="p2p-modal">
+        <div class="modal-content">
+            <h3 id="modal-title" style="font-family: 'Orbitron'; color: var(--accent-cyan); margin-bottom: 15px;">MUA USDT</h3>
+
+            <label>SỐ LƯỢNG MUỐN GIAO DỊCH (USDT)</label>
+            <input type="number" id="trade-amount" class="input-box" placeholder="Nhập số lượng..." oninput="calculateTotal()">
+
+            <div class="calc-box">
+                <div class="calc-row"><span>Đơn giá:</span> <b id="display-price">0 VND</b></div>
+                <div class="calc-row"><span>Tổng thanh toán:</span> <b id="display-total" style="color: var(--green); font-size: 16px;">0 VND</b></div>
+            </div>
+
+            <div id="buy-info" style="display: none;">
+                <label>THÔNG TIN THANH TOÁN</label>
+                <div class="calc-box" style="border-style: dashed; font-size: 12px; position: relative; padding: 15px;">
+                    <div class="bank-info-row">
+                        <span class="info-label">Ngân hàng</span>
+                        <b class="info-value" id="admin-bank">BIDV</b>
+                        <i class="fas fa-copy copy-btn" onclick="copyText('admin-bank')"></i>
+                    </div>
+                    <div class="bank-info-row">
+                        <span class="info-label">Số tài khoản</span>
+                        <b class="info-value highlight" id="admin-acc">96247FIXFH</b>
+                        <i class="fas fa-copy copy-btn" onclick="copyText('admin-acc')"></i>
+                    </div>
+                    <div class="bank-info-row">
+                        <span class="info-label">Chủ tài khoản</span>
+                        <b class="info-value" id="admin-name">NGUYEN MINH THANG</b>
+                        <i class="fas fa-copy copy-btn" onclick="copyText('admin-name')"></i>
+                    </div>
+                    <div class="bank-info-row">
+                        <span class="info-label" style="color: var(--red);">* Nội dung CK</span>
+                        <b class="info-value" id="admin-note" style="color: var(--red);">UID</b>
+                        <i class="fas fa-copy copy-btn" style="color: var(--red);" onclick="copyText('admin-note')"></i>
+                    </div>
+
+                    <button class="copy-all-btn" onclick="copyAllBankInfo()">
+                        <i class="fas fa-clone"></i> SAO CHEP TAT CA THONG TIN
+                    </button>
+
+                    <div class="qr-section">
+                        <p style="font-size: 10px; margin-bottom: 8px; color: var(--text-dim);">Quét mã QR để thanh toán nhanh</p>
+                        <img id="qr-bidv-img" src="" alt="QR BIDV">
+                    </div>
+                </div>
+            </div>
+
+            <div id="sell-info" style="display: none;">
+                <label>THÔNG TIN NGÂN HÀNG NHẬN TIỀN (CỦA BẠN)</label>
+                <select id="user-bank-name" class="input-box" style="font-family: 'Inter'; font-size: 12px;">
+                    <option value="">-- Chọn ngân hàng --</option>
+                    <option value="Vietcombank">Vietcombank</option>
+                    <option value="Techcombank">Techcombank</option>
+                    <option value="MBBank">MB Bank</option>
+                    <option value="Vietinbank">Vietinbank</option>
+                    <option value="BIDV">BIDV</option>
+                    <option value="Agribank">Agribank</option>
+                    <option value="TPBank">TPBank</option>
+                    <option value="VPBank">VPBank</option>
+                    <option value="ACB">ACB</option>
+                    <option value="Sacombank">Sacombank</option>
+                    <option value="Momo">Ví MoMo</option>
+                </select>
+                <input type="text" id="user-bank-acc" class="input-box" placeholder="Số tài khoản của bạn...">
+                <input type="text" id="user-bank-user" class="input-box" placeholder="Tên chủ tài khoản (In hoa)...">
+            </div>
+
+            <button class="btn-trade btn-buy" id="btn-submit" style="margin-top: 15px;" onclick="submitTrade()">XÁC NHẬN GIAO DỊCH</button>
+            <button class="btn-trade" style="background: transparent; color: var(--text-dim); margin-top: 10px;" onclick="closeModal()">ĐÓNG</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast-msg"></div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let currentType = 'BUY';
+        let selectedOrder = null;
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 1800);
+        }
+
+        async function loadP2P(type) {
+            currentType = type;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            const tabBtn = document.getElementById(`tab-${type.toLowerCase()}`);
+            if (tabBtn) tabBtn.classList.add('active');
+
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/p2p/orders?type=${type}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const orders = await res.json();
+
+            // Fetch user data to get UID for transfer content
+            const userRes = await fetch(`${API_BASE}/api/user/data`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const userData = await userRes.json();
+            window.userUID = userData.uid;
+
+            document.getElementById('p2p-list').innerHTML = orders.map(o => `
+                <div class="merchant-card">
+                    <div class="m-header">
+                        <div class="m-name">${o.merchant_name} <i class="fas fa-check-circle"></i></div>
+                        <div style="font-size: 11px; color: var(--text-dim);">Tồn kho: ${o.stock} USDT</div>
+                    </div>
+                    <span style="font-size: 11px; color: var(--text-dim);">Đơn giá</span>
+                    <span class="price-val" style="color: ${type === 'BUY' ? 'var(--green)' : 'var(--red)'}">${parseFloat(o.price).toLocaleString()} VND</span>
+                    <button class="btn-trade ${type === 'BUY' ? 'btn-buy' : 'btn-sell'}" style="margin-top: 15px;" onclick="openTrade(${JSON.stringify(o).replace(/"/g, '&quot;')})">
+                        ${type === 'BUY' ? 'MUA NGAY' : 'BÁN NGAY'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function openTrade(order) {
+            selectedOrder = order;
+            document.getElementById('p2p-modal').style.display = 'flex';
+            document.getElementById('modal-title').innerText = currentType === 'BUY' ? "MUA USDT" : "BÁN USDT";
+            document.getElementById('modal-title').style.color = currentType === 'BUY' ? "var(--green)" : "var(--red)";
+            document.getElementById('display-price').innerText = parseFloat(order.price).toLocaleString() + " VND";
+            document.getElementById('btn-submit').className = `btn-trade ${currentType === 'BUY' ? 'btn-buy' : 'btn-sell'}`;
+
+            if(currentType === 'BUY') {
+                document.getElementById('buy-info').style.display = 'block';
+                document.getElementById('sell-info').style.display = 'none';
+
+                // Use bank info from the order or default admin bank
+                const bankParts = (order.bank_info || "BIDV - 96247FIXFH - NGUYEN MINH THANG").split(" - ");
+                document.getElementById('admin-bank').innerText = bankParts[0] || "BIDV";
+                document.getElementById('admin-acc').innerText = bankParts[1] || "96247FIXFH";
+                document.getElementById('admin-name').innerText = bankParts[2] || "NGUYEN MINH THANG";
+
+                // Show UID in transfer content
+                const uid = window.userUID || "---";
+                document.getElementById('admin-note').innerText = uid;
+
+                // Generate dynamic VietQR code
+                updateQRCode();
+            } else {
+                document.getElementById('buy-info').style.display = 'none';
+                document.getElementById('sell-info').style.display = 'block';
+            }
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            const amount = document.getElementById('trade-amount').value || 0;
+            const total = amount * (selectedOrder ? selectedOrder.price : 0);
+            document.getElementById('display-total').innerText = total.toLocaleString() + " VND";
+        }
+
+        async function submitTrade() {
+            const amount = document.getElementById('trade-amount').value;
+            if(!amount || amount <= 0) return alert("Nhập số lượng!");
+
+            let tradeData = {
+                orderId: selectedOrder.id,
+                amount: amount,
+                type: currentType
+            };
+
+            if(currentType === 'SELL') {
+                const bank = document.getElementById('user-bank-name').value;
+                const acc = document.getElementById('user-bank-acc').value;
+                const user = document.getElementById('user-bank-user').value;
+                if(!bank || !acc || !user) return alert("Vui lòng nhập thông tin ngân hàng của bạn!");
+                tradeData.userBank = { bank, acc, user };
+            }
+
+            const res = await fetch(`${API_BASE}/api/p2p/create-order`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(tradeData)
+            });
+
+            if(res.ok) {
+                alert("Giao dịch đã được gửi! Vui lòng thực hiện theo hướng dẫn và chờ Admin duyệt.");
+                location.reload();
+            } else {
+                const err = await res.json();
+                alert(err.message || "Lỗi giao dịch");
+            }
+        }
+
+        function closeModal() { document.getElementById('p2p-modal').style.display = 'none'; }
+
+        function copyText(id) {
+            const el = document.getElementById(id);
+            const text = el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback on the copy icon
+                const icon = el.parentElement.querySelector('.copy-btn');
+                if (icon) {
+                    icon.classList.add('copied');
+                    icon.classList.replace('fa-copy', 'fa-check');
+                    setTimeout(() => {
+                        icon.classList.remove('copied');
+                        icon.classList.replace('fa-check', 'fa-copy');
+                    }, 1500);
+                }
+                showToast('Da sao chep: ' + text);
+            }).catch(() => {
+                // Fallback for older browsers
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('Da sao chep: ' + text);
+            });
+        }
+
+        function copyAllBankInfo() {
+            const bank = document.getElementById('admin-bank').innerText;
+            const acc = document.getElementById('admin-acc').innerText;
+            const name = document.getElementById('admin-name').innerText;
+            const note = document.getElementById('admin-note').innerText;
+            const allInfo = `Ngan hang: ${bank}\nSo tai khoan: ${acc}\nChu tai khoan: ${name}\nNoi dung CK: ${note}`;
+            navigator.clipboard.writeText(allInfo).then(() => {
+                showToast('Da sao chep tat ca thong tin ngan hang!');
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = allInfo;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('Da sao chep tat ca thong tin ngan hang!');
+            });
+        }
+
+        function updateQRCode() {
+            const acc = document.getElementById('admin-acc').innerText;
+            const note = document.getElementById('admin-note').innerText || '';
+            const amount = document.getElementById('trade-amount').value || 0;
+            const total = Math.round(amount * (selectedOrder ? selectedOrder.price : 0));
+
+            // Generate VietQR URL (BIDV BIN: 970418)
+            let qrUrl = `https://img.vietqr.io/image/970418-${encodeURIComponent(acc)}-compact2.png?accountName=${encodeURIComponent('NGUYEN MINH THANG')}`;
+            if (total > 0) qrUrl += `&amount=${total}`;
+            if (note && note !== '---') qrUrl += `&addInfo=${encodeURIComponent(note)}`;
+
+            const qrImg = document.getElementById('qr-bidv-img');
+            if (qrImg) qrImg.src = qrUrl;
+        }
+
+        // Update QR when amount changes
+        const origCalcTotal = calculateTotal;
+        calculateTotal = function() {
+            origCalcTotal();
+            if (currentType === 'BUY' && document.getElementById('buy-info').style.display !== 'none') {
+                updateQRCode();
+            }
+        };
+
+        loadP2P('BUY');
+    </script>
+</body>
+</html>

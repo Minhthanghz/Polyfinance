@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Thị Trường | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.2);
+            --green: #00ff88; --red: #ff3366;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 90px; }
+
+        header { padding: 20px; background: rgba(18, 8, 43, 0.95); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+        .header-title { font-family: 'Orbitron'; font-size: 18px; text-align: center; letter-spacing: 1px; }
+
+        /* --- MARKET LIST --- */
+        .market-list { padding: 0 20px; margin-top: 10px; }
+        .market-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        .coin-info { display: flex; align-items: center; gap: 12px; }
+        .coin-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); }
+        .coin-name b { display: block; font-size: 15px; }
+        .coin-name span { font-size: 11px; color: var(--text-dim); }
+
+        .coin-price-block { text-align: right; }
+        .coin-price { display: block; font-family: 'Orbitron'; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .coin-change { font-size: 11px; font-weight: 500; }
+
+        /* --- FIXED NAV BAR (ĐỒNG BỘ CHUẨN) --- */
+        .nav-bar { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            height: 70px; background: rgba(12, 5, 29, 0.95); 
+            display: flex; justify-content: space-around; align-items: center; 
+            border-top: 1px solid var(--border); backdrop-filter: blur(20px); z-index: 2000;
+            padding: 0 5px;
+        }
+        .nav-link { 
+            text-decoration: none; color: var(--text-dim); 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center;
+            flex: 1; height: 100%; gap: 4px;
+        }
+        .nav-link i { font-size: 20px; height: 24px; display: flex; align-items: center; }
+        .nav-link span { font-size: 10px; font-weight: 500; white-space: nowrap; }
+        .nav-link.active { color: var(--purple-neon); }
+
+        .nav-center-wrapper { position: relative; width: 60px; height: 100%; display: flex; justify-content: center; }
+        .nav-center { 
+            position: absolute; top: -25px;
+            width: 54px; height: 54px; 
+            background: var(--purple-neon); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 5px 15px var(--purple-glow); 
+            color: white !important; border: 4px solid var(--bg-body); 
+            font-size: 22px !important; 
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2 class="header-title">THỊ TRƯỜNG</h2>
+    </header>
+
+    <div class="market-list">
+        <div class="market-item">
+            <div class="coin-info">
+                <div class="coin-icon" style="color: var(--purple-neon);"><i class="fas fa-gem"></i></div>
+                <div class="coin-name"><b>PFT</b><span>PolyFinance</span></div>
+            </div>
+            <div class="coin-price-block">
+                <span class="coin-price" id="price-PFT">0.0000</span>
+                <span class="coin-change" id="change-PFT">0.00%</span>
+            </div>
+        </div>
+        <div class="market-item">
+            <div class="coin-info">
+                <div class="coin-icon" style="color: #f3ba2f;"><i class="fab fa-bitcoin"></i></div>
+                <div class="coin-name"><b>BTC</b><span>Bitcoin</span></div>
+            </div>
+            <div class="coin-price-block">
+                <span class="coin-price" id="price-BTC">0.00</span>
+                <span class="coin-change" id="change-BTC">0.00%</span>
+            </div>
+        </div>
+        <div class="market-item">
+            <div class="coin-info">
+                <div class="coin-icon" style="color: #627eea;"><i class="fab fa-ethereum"></i></div>
+                <div class="coin-name"><b>ETH</b><span>Ethereum</span></div>
+            </div>
+            <div class="coin-price-block">
+                <span class="coin-price" id="price-ETH">0.00</span>
+                <span class="coin-change" id="change-ETH">0.00%</span>
+            </div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Trang Chủ</span>
+        </a>
+        <a href="market.html" class="nav-link active">
+            <i class="fas fa-chart-line"></i>
+            <span>Thị Trường</span>
+        </a>
+        <div class="nav-center-wrapper">
+            <a href="mining.html" class="nav-center">
+                <i class="fas fa-bolt"></i>
+            </a>
+        </div>
+        <a href="affiliate.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Đội Ngũ</span>
+        </a>
+        <a href="profile.html" class="nav-link">
+            <i class="fas fa-wallet"></i>
+            <span>Ví Tiền</span>
+        </a>
+    </nav>
+
+    <script>
+        function startMarketWS() {
+            const symbols = ['dogeusdt', 'btcusdt', 'ethusdt'];
+            const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbols.map(s => s+'@ticker').join('/')}`);
+            ws.onmessage = (event) => {
+                const d = JSON.parse(event.data);
+                let s = d.s.toUpperCase().replace('USDT', '');
+                if (s === 'DOGE') s = 'PFT';
+                const pEl = document.getElementById(`price-${s}`);
+                const cEl = document.getElementById(`change-${s}`);
+                if (pEl) {
+                    const price = parseFloat(d.c);
+                    pEl.innerText = price > 1 ? price.toLocaleString() : price.toFixed(4);
+                    cEl.innerText = (parseFloat(d.P) >= 0 ? '+' : '') + d.P + '%';
+                    cEl.style.color = parseFloat(d.P) >= 0 ? '#00ff88' : '#ff3366';
+                }
+            };
+        }
+        startMarketWS();
+    </script>
+</body>
+</html>

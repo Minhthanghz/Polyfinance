@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-admin: #060212; --card-admin: #12082b; --purple-neon: #9d50bb;
+            --green: #00ff88; --red: #ff3366; --blue: #00d2ff; --gold: #ffcc00; --text: #e0e0e0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-admin); color: var(--text); padding-bottom: 50px; }
+
+        /* --- AUTH GUARD --- */
+        #admin-auth { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .auth-card { background: var(--card-admin); padding: 35px; border-radius: 20px; border: 1px solid var(--purple-neon); width: 320px; text-align: center; }
+
+        header { padding: 20px; background: var(--card-admin); border-bottom: 2px solid var(--purple-neon); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+
+        .admin-nav { display: flex; background: #000; padding: 5px; margin: 20px; border-radius: 12px; border: 1px solid var(--purple-neon); overflow-x: auto; }
+        .nav-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text); font-family: 'Orbitron'; font-size: 11px; cursor: pointer; border-radius: 8px; white-space: nowrap; }
+        .nav-btn.active { background: var(--purple-neon); color: #fff; }
+
+        .container { padding: 0 20px; }
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .stat-card { background: var(--card-admin); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
+        .table-wrapper { background: var(--card-admin); border-radius: 15px; overflow-x: auto; border: 1px solid #333; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { text-align: left; padding: 15px; background: rgba(157, 80, 187, 0.1); color: var(--purple-neon); font-size: 11px; }
+        td { padding: 15px; border-bottom: 1px solid #222; font-size: 13px; }
+
+        .btn-act { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; font-family: 'Orbitron'; transition: 0.2s; }
+        .btn-ok { background: var(--green); color: #000; }
+        .btn-no { background: var(--red); color: #fff; }
+        .btn-blue { background: var(--blue); color: #000; }
+
+        .input-dark { background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 8px; outline: none; width: 100%; margin-top: 5px; }
+        label { font-size: 10px; color: var(--purple-neon); font-family: 'Orbitron'; }
+    </style>
+</head>
+<body>
+
+    <div id="admin-auth">
+        <div class="auth-card">
+            <h2 style="font-family:'Orbitron'; margin-bottom:20px;">ADMIN CORE</h2>
+            <input type="password" id="admin-pass" class="input-dark" placeholder="Mật khẩu quản trị...">
+            <button class="btn-act btn-ok" style="width:100%; margin-top: 15px;" onclick="login()">ĐĂNG NHẬP</button>
+        </div>
+    </div>
+
+    <header>
+        <h1 style="font-family:'Orbitron'; font-size:18px;">PFT <span style="color:var(--purple-neon)">SYSTEM</span></h1>
+        <div id="sys-time" style="font-size: 12px; color: var(--blue);"></div>
+    </header>
+
+    <nav class="admin-nav">
+        <button class="nav-btn active" onclick="showPanel('users', this)">Người Dùng</button>
+        <button class="nav-btn" onclick="showPanel('deposits', this)">Duyệt Nạp</button>
+        <button class="nav-btn" onclick="showPanel('withdraws', this)">Duyệt Rút</button>
+        <button class="nav-btn" onclick="showPanel('p2p', this)">Quản Lý Đơn P2P</button>
+        <button class="nav-btn" onclick="showPanel('p2p-trades', this)">Phê Duyệt P2P</button>
+    </nav>
+
+    <div class="container">
+
+        <div id="panel-users" class="panel active">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="stat-card">
+                    <h4 style="font-family:'Orbitron'; color:var(--blue)">CỘNG TIỀN (BUFF)</h4>
+                    <div style="margin-top:10px;">
+                        <label>UID NGƯỜI NHẬN</label>
+                        <input type="number" id="buff-uid" class="input-dark" placeholder="Nhập UID...">
+                        <label style="margin-top:10px; display:block;">SỐ LƯỢNG USDT</label>
+                        <input type="number" id="buff-amount" class="input-dark" placeholder="0.00">
+                        <button class="btn-act btn-ok" style="width:100%; margin-top:15px;" onclick="handleBuff()">XÁC NHẬN CỘNG</button>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h4 style="font-family:'Orbitron'; color:var(--purple-neon)">CẤP VÍ NẠP</h4>
+                    <div style="margin-top:10px;">
+                        <label>UID NGƯỜI NHẬN</label>
+                        <input type="number" id="wallet-uid" class="input-dark" placeholder="Nhập UID...">
+                        <label style="margin-top:10px; display:block;">ĐỊA CHỈ VÍ BEP20</label>
+                        <input type="text" id="wallet-addr" class="input-dark" placeholder="0x...">
+                        <button class="btn-act btn-blue" style="width:100%; margin-top:15px;" onclick="handleSetWallet()">CẬP NHẬT VÍ</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>UID</th><th>Email</th><th>Số dư USDT</th><th>Số dư PFT</th><th>Ví Đã Cấp</th><th>Trạng thái</th></tr></thead>
+                    <tbody id="user-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="panel-deposits" class="panel">
+            <h4 style="font-family:'Orbitron'; margin-bottom:15px;">YÊU CẦU CẤP ĐỊA CHỈ VÍ</h4>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>UID</th><th>Email</th><th>Thời Gian</th><th>Hành Động</th></tr></thead>
+                    <tbody id="deposit-request-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="panel-withdraws" class="panel">
+            <h4 style="font-family:'Orbitron'; margin-bottom:15px;">YÊU CẦU RÚT TIỀN</h4>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>UID</th><th>Số tiền</th><th>Địa chỉ nhận</th><th>Thời gian</th><th>Thao tác</th></tr></thead>
+                    <tbody id="withdraw-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="panel-p2p" class="panel">
+            <h4 style="font-family:'Orbitron'; margin-bottom:15px;">ĐĂNG ĐƠN P2P MỚI</h4>
+            <div class="stat-card">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label>LOẠI</label>
+                        <select id="p2p-type" class="input-dark">
+                            <option value="BUY">MUA (Admin bán cho User)</option>
+                            <option value="SELL">BÁN (Admin mua từ User)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>ĐƠN GIÁ (VND)</label>
+                        <input type="number" id="p2p-price" class="input-dark" placeholder="25500">
+                    </div>
+                    <div>
+                        <label>TỒN KHO (USDT)</label>
+                        <input type="number" id="p2p-stock" class="input-dark" placeholder="1000">
+                    </div>
+                    <div>
+                        <label>THÔNG TIN BANK ADMIN</label>
+                        <input type="text" id="p2p-bank" class="input-dark" value="BIDV - 96247FIXFH - NGUYEN MINH THANG">
+                    </div>
+                </div>
+                <button class="btn-act btn-ok" style="width:100%; margin-top:20px;" onclick="handleP2PCreate()">ĐĂNG ĐƠN NGAY</button>
+            </div>
+            
+            <h4 style="font-family:'Orbitron'; margin: 25px 0 15px;">DANH SÁCH ĐƠN ĐANG CHẠY</h4>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>ID</th><th>Người đăng</th><th>Loại</th><th>Giá</th><th>Kho</th><th>Thao tác</th></tr></thead>
+                    <tbody id="p2p-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="panel-p2p-trades" class="panel">
+            <h4 style="font-family:'Orbitron'; margin-bottom:15px;">PHÊ DUYỆT GIAO DỊCH P2P</h4>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>UID</th><th>Email</th><th>Loại</th><th>Số lượng</th><th>Thông tin Bank User</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+                    <tbody id="p2p-trade-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // Quản lý đăng nhập Admin
+        function login() {
+            if(document.getElementById('admin-pass').value === "0383154754Aa%a") {
+                document.getElementById('admin-auth').style.display = 'none';
+                loadUsers();
+            } else { alert("Mật khẩu sai!"); }
+        }
+
+        function showPanel(id, btn) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`panel-${id}`).classList.add('active');
+            btn.classList.add('active');
+
+            if(id === 'users') loadUsers();
+            if(id === 'deposits') loadDepositRequests();
+            if(id === 'withdraws') loadWithdrawRequests();
+            if(id === 'p2p') loadP2POrders();
+            if(id === 'p2p-trades') loadP2PTrades();
+        }
+
+        // --- API NGƯỜI DÙNG & BUFF ---
+        async function loadUsers() {
+            const res = await fetch(`${API_BASE}/api/admin/users`);
+            const data = await res.json();
+            document.getElementById('user-list').innerHTML = data.map(u => `
+                <tr>
+                    <td><b>${u.uid}</b></td>
+                    <td>${u.email}</td>
+                    <td style="color:var(--green)">${parseFloat(u.usdt_balance).toFixed(2)}</td>
+                    <td style="color:var(--purple-neon)">${parseFloat(u.pft_balance).toFixed(4)}</td>
+                    <td><small>${u.assigned_wallet || '---'}</small></td>
+                    <td><span class="btn-act" style="background:#222">${u.kyc_status === 1 ? 'KYC OK' : 'No KYC'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        async function handleBuff() {
+            const uid = document.getElementById('buff-uid').value;
+            const amount = document.getElementById('buff-amount').value;
+            const res = await fetch(`${API_BASE}/api/admin/buff`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ uid, amount, asset: 'usdt' })
+            });
+            if(res.ok) { alert("Cộng tiền thành công!"); loadUsers(); }
+        }
+
+        async function handleSetWallet() {
+            const uid = document.getElementById('wallet-uid').value;
+            const wallet = document.getElementById('wallet-addr').value;
+            const res = await fetch(`${API_BASE}/api/admin/set-wallet`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ uid, wallet })
+            });
+            if(res.ok) { alert("Đã cập nhật ví cho User!"); loadUsers(); loadDepositRequests(); }
+        }
+
+        // --- API GIAO DỊCH ---
+        async function loadDepositRequests() {
+            const res = await fetch(`${API_BASE}/api/admin/deposit-requests`);
+            const data = await res.json();
+            document.getElementById('deposit-request-list').innerHTML = data.map(r => `
+                <tr>
+                    <td>${r.uid}</td>
+                    <td>${r.email}</td>
+                    <td>${new Date(r.created_at).toLocaleString()}</td>
+                    <td><button class="btn-act btn-blue" onclick="fillSetWallet('${r.uid}')">CẤP VÍ</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadWithdrawRequests() {
+            const res = await fetch(`${API_BASE}/api/admin/withdraw-requests`);
+            const data = await res.json();
+            document.getElementById('withdraw-list').innerHTML = data.map(w => `
+                <tr>
+                    <td>${w.uid}</td>
+                    <td><b>${w.amount} USDT</b></td>
+                    <td><small>${w.address}</small></td>
+                    <td>${new Date(w.created_at).toLocaleString()}</td>
+                    <td>
+                        <button class="btn-act btn-ok" onclick="actionWithdraw('${w.id}', 'SUCCESS')">DUYỆT</button>
+                        <button class="btn-act btn-no" onclick="actionWithdraw('${w.id}', 'REJECT')">HỦY</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadP2POrders() {
+            try {
+                const res = await fetch(`${API_BASE}/api/p2p/orders?type=ALL`);
+                const data = await res.json();
+                document.getElementById('p2p-list').innerHTML = data.map(o => `
+                    <tr>
+                        <td>${o.id}</td>
+                        <td>Admin</td>
+                        <td style="color:${o.type==='BUY'?'var(--green)':'var(--red)'}">${o.type}</td>
+                        <td>${parseFloat(o.price).toLocaleString()} VND</td>
+                        <td>${o.stock} USDT</td>
+                        <td><button class="btn-act btn-no" onclick="deleteP2P('${o.id}')">XÓA</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error("Lỗi tải đơn P2P:", e);
+                document.getElementById('p2p-list').innerHTML = "<tr><td colspan='6'>Không thể tải danh sách đơn P2P</td></tr>";
+            }
+        }
+
+        async function handleP2PCreate() {
+            const data = {
+                type: document.getElementById('p2p-type').value,
+                price: document.getElementById('p2p-price').value,
+                stock: document.getElementById('p2p-stock').value,
+                merchant: "ADMIN_SYSTEM",
+                bank_info: document.getElementById('p2p-bank').value
+            };
+            await fetch(`${API_BASE}/api/admin/p2p-create`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            alert("Đã đăng đơn P2P!");
+            loadP2POrders();
+        }
+
+        async function loadP2PTrades() {
+            const res = await fetch(`${API_BASE}/api/admin/p2p-trades`);
+            const data = await res.json();
+            document.getElementById('p2p-trade-list').innerHTML = data.map(t => `
+                <tr>
+                    <td>${t.uid}</td>
+                    <td>${t.email}</td>
+                    <td style="color:${t.type==='BUY'?'var(--green)':'var(--red)'}">${t.type}</td>
+                    <td>${t.amount} USDT <br><small style="color:var(--blue)">(${Math.round(t.amount_vnd || 0).toLocaleString()} VND)</small></td>
+                    <td><small>${t.user_bank_info}</small></td>
+                    <td>${t.status} ${t.admin_note ? `<br><small style="color:var(--gold)">${t.admin_note}</small>` : ''}</td>
+                    <td>
+                        <button class="btn-act btn-ok" onclick="actionP2PTrade('${t.id}', 'APPROVE')">DUYỆT</button>
+                        <button class="btn-act btn-no" onclick="actionP2PTrade('${t.id}', 'REJECT')">HỦY</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function actionP2PTrade(id, action) {
+            if(!confirm(`Xác nhận ${action} giao dịch này?`)) return;
+            const res = await fetch(`${API_BASE}/api/admin/p2p-trade-action`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id, action })
+            });
+            if(res.ok) { alert("Thành công!"); loadP2PTrades(); }
+        }
+
+        async function actionWithdraw(id, status) {
+            if(!confirm(`Xác nhận ${status === 'SUCCESS' ? 'DUYỆT' : 'HỦY'} yêu cầu này?`)) return;
+            const res = await fetch(`${API_BASE}/api/admin/withdraw-action`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id, status })
+            });
+            if(res.ok) { alert("Thành công!"); loadWithdrawRequests(); }
+        }
+
+        async function deleteP2P(id) {
+            if(!confirm("Xác nhận xóa đơn hàng này?")) return;
+            const res = await fetch(`${API_BASE}/api/admin/p2p-delete`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id })
+            });
+            if(res.ok) { alert("Đã xóa!"); loadP2POrders(); }
+        }
+
+        function fillSetWallet(uid) {
+            document.getElementById('wallet-uid').value = uid;
+            showPanel('users', document.querySelectorAll('.nav-btn')[0]);
+        }
+
+        setInterval(() => { document.getElementById('sys-time').innerText = new Date().toLocaleString(); }, 1000);
+    </script>
+</body>
+</html>

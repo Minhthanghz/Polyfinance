@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lịch sử giao dịch | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.2);
+            --green: #00ff88; --red: #ff3366; --gold: #ffcc00;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 40px; }
+
+        header { padding: 20px; display: flex; align-items: center; gap: 15px; background: rgba(18, 8, 43, 0.9); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+
+        .filter-scroll { display: flex; gap: 10px; padding: 15px 20px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .filter-scroll::-webkit-scrollbar { display: none; }
+
+        .filter-btn { padding: 8px 18px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); font-size: 12px; cursor: pointer; transition: 0.3s; }
+        .filter-btn.active { background: var(--purple-neon); color: #fff; border-color: transparent; box-shadow: 0 0 10px var(--purple-glow); }
+
+        .history-container { padding: 0 20px; }
+        .history-card { background: var(--bg-card); border-radius: 18px; border: 1px solid var(--border); overflow: hidden; }
+
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .history-item:last-child { border: none; }
+
+        .tx-left { display: flex; align-items: center; gap: 12px; }
+        .tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+        .tx-title { font-weight: 600; font-size: 14px; display: block; margin-bottom: 2px; }
+        .tx-date { font-size: 11px; color: var(--text-dim); }
+
+        .tx-right { text-align: right; }
+        .tx-amount { font-family: 'Orbitron'; font-size: 14px; font-weight: bold; display: block; margin-bottom: 2px; }
+        .tx-status { font-size: 10px; font-weight: bold; text-transform: uppercase; }
+
+        /* Status Colors */
+        .color-NAP { background: rgba(0, 255, 136, 0.1); color: var(--green); }
+        .color-RUT { background: rgba(255, 51, 102, 0.1); color: var(--red); }
+        .color-CHUYEN { background: rgba(0, 210, 255, 0.1); color: var(--accent-cyan); }
+        .color-MINING { background: rgba(157, 80, 187, 0.1); color: var(--purple-neon); }
+
+        .status-success { color: var(--green); }
+        .status-pending { color: var(--gold); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="profile.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 16px;">LỊCH SỬ GIAO DỊCH</h2>
+    </header>
+
+    <div class="filter-scroll">
+        <button class="filter-btn active" onclick="filterHistory('ALL', this)">Tất cả</button>
+        <button class="filter-btn" onclick="filterHistory('NAP', this)">Nạp tiền</button>
+        <button class="filter-btn" onclick="filterHistory('RUT', this)">Rút tiền</button>
+        <button class="filter-btn" onclick="filterHistory('CHUYEN', this)">Chuyển ví</button>
+        <button class="filter-btn" onclick="filterHistory('SWAP', this)">Swap</button>
+        <button class="filter-btn" onclick="filterHistory('CLAIM', this)">Mining</button>
+    </div>
+
+    <div class="history-container">
+        <div class="history-card" id="history-list">
+            <p style="text-align: center; padding: 40px; color: var(--text-dim); font-size: 13px;">Đang tải lịch sử...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let allTransactions = [];
+
+        async function loadHistory() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_BASE}/api/user/transactions`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                allTransactions = await res.json();
+                renderHistory(allTransactions);
+            } catch (e) {
+                document.getElementById('history-list').innerHTML = `<p style="text-align:center; padding:40px; color:var(--red)">Lỗi tải dữ liệu.</p>`;
+            }
+        }
+
+        function renderHistory(data) {
+            const list = document.getElementById('history-list');
+            if (data.length === 0) {
+                list.innerHTML = `<p style="text-align: center; padding: 40px; color: var(--text-dim); font-size: 13px;">Chưa có giao dịch nào.</p>`;
+                return;
+            }
+
+            list.innerHTML = data.map(tx => {
+                const isPositive = tx.amount > 0;
+                const typeClass = tx.type.toUpperCase();
+
+                return `
+                    <div class="history-item">
+                        <div class="tx-left">
+                            <div class="tx-icon color-${typeClass}">
+                                ${getIcon(tx.type)}
+                            </div>
+                            <div>
+                                <span class="tx-title">${formatType(tx.type)}</span>
+                                <span class="tx-date">${new Date(tx.created_at).toLocaleString('vi-VN')}</span>
+                            </div>
+                        </div>
+                        <div class="tx-right">
+                            <span class="tx-amount" style="color: ${isPositive ? 'var(--green)' : 'var(--red)'}">
+                                ${isPositive ? '+' : ''}${parseFloat(tx.amount).toLocaleString()}
+                            </span>
+                            <span class="tx-status ${tx.status === 'SUCCESS' ? 'status-success' : 'status-pending'}">
+                                ${tx.status === 'SUCCESS' ? 'Hoàn tất' : 'Chờ duyệt'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getIcon(type) {
+            switch(type.toUpperCase()) {
+                case 'NAP': return '<i class="fas fa-arrow-down"></i>';
+                case 'RUT': return '<i class="fas fa-paper-plane"></i>';
+                case 'CHUYEN': return '<i class="fas fa-exchange-alt"></i>';
+                case 'SWAP': return '<i class="fas fa-sync"></i>';
+                case 'CLAIM': return '<i class="fas fa-bolt"></i>';
+                default: return '<i class="fas fa-history"></i>';
+            }
+        }
+
+        function formatType(type) {
+            const types = {
+                'NAP': 'Nạp USDT',
+                'RUT': 'Rút USDT',
+                'CHUYEN': 'Chuyển nội bộ',
+                'SWAP': 'Hoán đổi PFT',
+                'CLAIM': 'Nhận Mining',
+                'STAKING': 'Gửi lãi PFT'
+            };
+            return types[type.toUpperCase()] || type;
+        }
+
+        function filterHistory(type, btn) {
+            // Cập nhật UI nút
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Lọc dữ liệu
+            if (type === 'ALL') {
+                renderHistory(allTransactions);
+            } else {
+                const filtered = allTransactions.filter(tx => tx.type.toUpperCase() === type);
+                renderHistory(filtered);
+            }
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>

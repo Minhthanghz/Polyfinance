@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nạp USDT | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #0a051d; --bg-card: #160d35; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.5); --text-main: #ffffff;
+            --text-dim: #b0b0b0; --border: rgba(157, 80, 187, 0.3); --green: #00ff88;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); min-height: 100vh; }
+
+        header { padding: 20px; background: rgba(22, 13, 53, 0.95); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+
+        .container { padding: 25px; }
+
+        /* --- TRẠNG THÁI CHƯA CÓ VÍ --- */
+        #request-area { text-align: center; padding: 40px 20px; background: var(--bg-card); border-radius: 30px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .request-icon { width: 80px; height: 80px; background: rgba(157, 80, 187, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 35px; color: var(--purple-neon); border: 1px solid var(--purple-neon); }
+
+        .btn-request { width: 100%; padding: 16px; background: var(--purple-neon); border: none; border-radius: 15px; color: white; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; margin-top: 25px; box-shadow: 0 5px 20px var(--purple-glow); transition: 0.3s; }
+        .btn-request:disabled { background: #444; box-shadow: none; cursor: not-allowed; }
+
+        /* --- TRẠNG THÁI ĐÃ CÓ VÍ --- */
+        #deposit-area { display: none; }
+        .wallet-card { background: linear-gradient(135deg, #160d35 0%, #251652 100%); border-radius: 25px; padding: 30px; border: 1px solid var(--purple-neon); text-align: center; }
+        .qr-placeholder { width: 180px; height: 180px; background: #fff; margin: 0 auto 20px; padding: 10px; border-radius: 15px; }
+        .qr-placeholder img { width: 100%; height: 100%; }
+
+        .wallet-address-box { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px dashed var(--purple-neon); color: #fff; font-size: 12px; word-break: break-all; margin: 20px 0; font-family: monospace; }
+        .btn-copy { background: transparent; border: 1px solid var(--purple-neon); color: var(--purple-neon); padding: 10px 20px; border-radius: 10px; font-family: 'Orbitron'; font-size: 11px; cursor: pointer; width: 100%; }
+
+        .badge-network { display: inline-block; background: rgba(0, 255, 136, 0.1); color: var(--green); padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; margin-bottom: 15px; }
+
+        .tips { margin-top: 30px; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+        .tips p { margin-bottom: 10px; display: flex; gap: 10px; }
+        .tips i { color: var(--purple-neon); margin-top: 3px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="profile.html" class="back-btn"><i class="fas fa-chevron-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 16px; letter-spacing: 1px;">NẠP TIỀN USDT</h2>
+    </header>
+
+    <div class="container">
+
+        <div id="request-area">
+            <div class="request-icon"><i class="fas fa-wallet"></i></div>
+            <h3 style="font-family: 'Orbitron'; margin-bottom: 10px;">Chưa có ví nạp</h3>
+            <p style="color: var(--text-dim); font-size: 13px; line-height: 1.5;">Hệ thống cần cấp cho bạn một địa chỉ ví USDT (BEP20) riêng biệt để nhận diện khoản nạp.</p>
+            <button id="btn-send-request" class="btn-request" onclick="sendWalletRequest()">GỬI YÊU CẦU CẤP VÍ</button>
+            <p id="request-status" style="margin-top: 15px; font-size: 12px; color: var(--green); display: none;">Yêu cầu đã gửi! Vui lòng chờ Admin duyệt.</p>
+        </div>
+
+        <div id="deposit-area">
+            <div class="wallet-card">
+                <div class="badge-network">MẠNG LƯỚI: BEP20 (BSC)</div>
+                <div class="qr-placeholder">
+                    <img id="qr-img" src="" alt="QR Code">
+                </div>
+
+                <div class="wallet-label" style="font-size: 11px; color: var(--text-dim); font-family: 'Orbitron';">ĐỊA CHỈ VÍ CỦA BẠN</div>
+                <div class="wallet-address-box" id="addr-text">---</div>
+                <button class="btn-copy" onclick="copyAddr()">SAO CHÉP ĐỊA CHỈ</button>
+            </div>
+
+            <div class="tips">
+                <p><i class="fas fa-info-circle"></i> Chỉ gửi USDT (BEP20) vào địa chỉ này.</p>
+                <p><i class="fas fa-info-circle"></i> Tài sản sẽ được cộng tự động sau 1-3 lần xác nhận mạng.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function checkWalletStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/api/user/profile`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const user = await res.json();
+
+                if (user.assigned_wallet) {
+                    // Nếu đã có ví (Admin đã cấp)
+                    document.getElementById('request-area').style.display = 'none';
+                    document.getElementById('deposit-area').style.display = 'block';
+                    document.getElementById('addr-text').innerText = user.assigned_wallet;
+                    // Tạo QR Code nhanh từ API công khai
+                    document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${user.assigned_wallet}`;
+                } else {
+                    // Kiểm tra xem đã gửi yêu cầu chưa (qua localStorage để tránh spam)
+                    if(localStorage.getItem('wallet_requested') === 'true') {
+                        document.getElementById('btn-send-request').disabled = true;
+                        document.getElementById('btn-send-request').innerText = "ĐANG CHỜ PHÊ DUYỆT";
+                        document.getElementById('request-status').style.display = 'block';
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function sendWalletRequest() {
+            const btn = document.getElementById('btn-send-request');
+            btn.disabled = true;
+            btn.innerText = "ĐANG GỬI...";
+
+            try {
+                // Gửi thông báo đến Admin (Sử dụng API chung của bạn)
+                const res = await fetch(`${API_BASE}/api/admin/request-wallet`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if(res.ok) {
+                    localStorage.setItem('wallet_requested', 'true');
+                    document.getElementById('request-status').style.display = 'block';
+                    btn.innerText = "ĐÃ GỬI YÊU CẦU";
+                }
+            } catch (e) {
+                alert("Lỗi kết nối!");
+                btn.disabled = false;
+                btn.innerText = "GỬI LẠI YÊU CẦU";
+            }
+        }
+
+        function copyAddr() {
+            const text = document.getElementById('addr-text').innerText;
+            navigator.clipboard.writeText(text);
+            alert("Đã sao chép địa chỉ!");
+        }
+
+        checkWalletStatus();
+    </script>
+</body>
+</html>

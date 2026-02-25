@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bảo mật | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-body: #060212;
+            --bg-card: #12082b;
+            --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4);
+            --accent-cyan: #00d2ff;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+            --border: rgba(157, 80, 187, 0.2);
+            --green-secure: #00ff88;
+            --red-danger: #ff3366;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 50px; }
+
+        /* --- AUTH GUARD --- */
+        #auth-guard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .loader { width: 35px; height: 35px; border: 3px solid var(--border); border-top-color: var(--purple-neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        header { padding: 20px; display: flex; align-items: center; gap: 15px; background: rgba(18, 8, 43, 0.9); border-bottom: 1px solid var(--border); }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+
+        .security-level { margin: 20px; padding: 25px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.05), rgba(157, 80, 187, 0.05)); border-radius: 20px; border: 1px solid var(--green-secure); text-align: center; }
+        .shield-icon { font-size: 40px; color: var(--green-secure); margin-bottom: 10px; filter: drop-shadow(0 0 8px var(--green-secure)); }
+
+        .sec-section { padding: 0 20px; margin-bottom: 30px; }
+        .sec-title { font-family: 'Orbitron'; font-size: 13px; margin-bottom: 15px; color: var(--purple-neon); letter-spacing: 1px; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 8px; }
+        .input-group input { width: 100%; background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: white; outline: none; transition: 0.3s; }
+        .input-group input:focus { border-color: var(--accent-cyan); }
+
+        .btn-update { width: 100%; padding: 16px; background: var(--purple-neon); border: none; border-radius: 12px; color: white; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px var(--purple-glow); transition: 0.3s; }
+        .btn-update:active { transform: scale(0.98); }
+
+        .opt-item { display: flex; justify-content: space-between; align-items: center; padding: 18px; background: rgba(255,255,255,0.03); border-radius: 15px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .opt-info b { font-size: 14px; display: block; margin-bottom: 2px; }
+        .opt-info span { font-size: 11px; color: var(--text-dim); }
+
+        .toggle { width: 44px; height: 24px; background: #333; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
+        .toggle.active { background: var(--green-secure); }
+        .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .toggle.active::after { left: 23px; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-guard"><div class="loader"></div></div>
+
+    <header>
+        <a href="profile.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family: 'Orbitron'; font-size: 18px;">Bảo mật tài khoản</h2>
+    </header>
+
+    <div class="security-level">
+        <i class="fas fa-shield-alt shield-icon"></i>
+        <h3 id="sec-level-text" style="font-size: 16px;">Mức độ bảo mật: CAO</h3>
+        <p style="font-size: 11px; opacity: 0.7; margin-top: 5px;">Tài khoản được bảo vệ bởi hệ thống xác thực của Neon DB.</p>
+    </div>
+
+    <div class="sec-section">
+        <h3 class="sec-title">Thay đổi mật khẩu</h3>
+        <div class="input-group">
+            <label>Mật khẩu hiện tại</label>
+            <input type="password" id="old-pass" placeholder="••••••••">
+        </div>
+        <div class="input-group">
+            <label>Mật khẩu mới</label>
+            <input type="password" id="new-pass" placeholder="Tối thiểu 8 ký tự">
+        </div>
+        <button class="btn-update" onclick="handlePasswordUpdate()">LƯU THAY ĐỔI</button>
+    </div>
+
+    <div class="sec-section">
+        <h3 class="sec-title">Cài đặt nâng cao</h3>
+        
+        <div class="opt-item">
+            <div class="opt-info">
+                <b>Xác thực Email</b>
+                <span>Mã OTP khi thực hiện giao dịch</span>
+            </div>
+            <div class="toggle active" onclick="toggleSetting('email_auth', this)"></div>
+        </div>
+
+        <div class="opt-item">
+            <div class="opt-info">
+                <b>Google Authenticator (2FA)</b>
+                <span>Sử dụng app xác thực 6 chữ số</span>
+            </div>
+            <div class="toggle" id="2fa-toggle" onclick="toggleSetting('2fa_auth', this)"></div>
+        </div>
+
+        <div class="opt-item">
+            <div class="opt-info">
+                <b>Bảo mật sinh trắc học</b>
+                <span>Vân tay hoặc khuôn mặt</span>
+            </div>
+            <div class="toggle active" onclick="toggleSetting('biometric', this)"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        const token = localStorage.getItem('token');
+
+        // 1. KIỂM TRA SESSION ĐĂNG NHẬP
+        async function initSecurity() {
+            if (!token) { window.location.href = 'login-register.html'; return; }
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!data.loggedIn) {
+                    window.location.href = 'login-register.html';
+                } else {
+                    document.getElementById('auth-guard').style.display = 'none';
+                    loadSecuritySettings();
+                }
+            } catch (e) { console.error("Security init failed"); }
+        }
+
+        // 2. TẢI CÀI ĐẶT TỪ DATABASE
+        async function loadSecuritySettings() {
+            try {
+                const res = await fetch(`${API_BASE}/api/user/security-data`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.security_2fa) document.getElementById('2fa-toggle').classList.add('active');
+                else document.getElementById('2fa-toggle').classList.remove('active');
+            } catch (e) {}
+        }
+
+        // 3. XỬ LÝ ĐỔI MẬT KHẨU (GỬI VỀ SERVER)
+        async function handlePasswordUpdate() {
+            const oldPass = document.getElementById('old-pass').value;
+            const newPass = document.getElementById('new-pass').value;
+
+            if (!oldPass || newPass.length < 8) {
+                alert("Mật khẩu mới phải có ít nhất 8 ký tự!");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/update-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ oldPass, newPass })
+                });
+
+                if (res.ok) {
+                    alert("Cập nhật mật khẩu thành công!");
+                    location.reload();
+                } else {
+                    const error = await res.json();
+                    alert(error.message || "Mật khẩu hiện tại không chính xác.");
+                }
+            } catch (e) { alert("Lỗi kết nối máy chủ"); }
+        }
+
+        // 4. BẬT/TẮT CÀI ĐẶT (SYNC VỚI DB)
+        async function toggleSetting(type, element) {
+            element.classList.toggle('active');
+            const isActive = element.classList.contains('active');
+
+            try {
+                await fetch(`${API_BASE}/api/user/update-security-opt`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ type, status: isActive })
+                });
+            } catch (e) {
+                // Rollback UI nếu lỗi
+                element.classList.toggle('active');
+                alert("Không thể lưu cài đặt. Vui lòng thử lại!");
+            }
+        }
+
+        initSecurity();
+    </script>
+</body>
+</html>

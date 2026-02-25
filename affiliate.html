@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Đội Ngũ | PolyFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-body: #060212; --bg-card: #12082b; --purple-neon: #9d50bb;
+            --purple-glow: rgba(157, 80, 187, 0.4); --accent-cyan: #00d2ff;
+            --text-main: #ffffff; --text-dim: #a0a0a0; --border: rgba(157, 80, 187, 0.2);
+            --green: #00ff88; --gold: #ffcc00;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 90px; }
+
+        header { padding: 20px; background: rgba(18, 8, 43, 0.95); border-bottom: 1px solid var(--border); text-align: center; position: sticky; top: 0; z-index: 100; }
+        .header-title { font-family: 'Orbitron'; font-size: 16px; letter-spacing: 1px; }
+
+        .container { padding: 15px; }
+
+        /* --- INVITE SECTION --- */
+        .invite-card { 
+            background: linear-gradient(135deg, #1a0b3d, #060212); 
+            border-radius: 20px; padding: 25px; border: 1px solid var(--purple-neon);
+            text-align: center; margin-bottom: 20px; position: relative; overflow: hidden;
+        }
+        .invite-card::after { content: '\f0c0'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: -15px; top: -15px; font-size: 80px; color: var(--purple-neon); opacity: 0.1; }
+
+        .invite-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .invite-code-box { 
+            background: rgba(0,0,0,0.3); border: 1px dashed var(--purple-neon); 
+            padding: 15px; border-radius: 12px; margin-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .code-val { font-family: 'Orbitron'; font-size: 20px; color: var(--accent-cyan); font-weight: bold; }
+        .copy-icon { color: var(--purple-neon); cursor: pointer; padding: 5px; }
+
+        /* --- STATS GRID --- */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-item { background: var(--bg-card); padding: 15px; border-radius: 16px; border: 1px solid var(--border); text-align: center; }
+        .stat-item i { font-size: 20px; color: var(--purple-neon); margin-bottom: 8px; }
+        .stat-item span { font-size: 10px; color: var(--text-dim); display: block; margin-bottom: 5px; }
+        .stat-item b { font-family: 'Orbitron'; font-size: 14px; }
+
+        /* --- TEAM LIST --- */
+        .section-header { font-family: 'Orbitron'; font-size: 13px; color: var(--purple-neon); margin: 25px 0 15px; display: flex; justify-content: space-between; align-items: center; }
+        .team-container { background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
+        .member-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .member-item:last-child { border: none; }
+
+        .member-info { display: flex; align-items: center; gap: 12px; }
+        .member-avatar { width: 35px; height: 35px; background: rgba(157, 80, 187, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--purple-neon); border: 1px solid var(--border); }
+        .member-detail b { font-size: 13px; display: block; }
+        .member-detail span { font-size: 10px; color: var(--text-dim); }
+
+        .member-status { text-align: right; }
+        .status-badge { font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: var(--green); color: #000; }
+
+        /* --- NAV BAR CHUẨN --- */
+        .nav-bar { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            height: 70px; background: rgba(12, 5, 29, 0.95); 
+            display: flex; justify-content: space-around; align-items: center; 
+            border-top: 1px solid var(--border); backdrop-filter: blur(20px); z-index: 2000;
+            padding: 0 5px;
+        }
+        .nav-link { 
+            text-decoration: none; color: var(--text-dim); 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center;
+            flex: 1; height: 100%; gap: 4px;
+        }
+        .nav-link i { font-size: 20px; height: 24px; display: flex; align-items: center; }
+        .nav-link span { font-size: 10px; font-weight: 500; white-space: nowrap; }
+        .nav-link.active { color: var(--purple-neon); }
+
+        .nav-center-wrapper { position: relative; width: 60px; height: 100%; display: flex; justify-content: center; }
+        .nav-center { 
+            position: absolute; top: -25px;
+            width: 54px; height: 54px; 
+            background: var(--purple-neon); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 5px 15px var(--purple-glow); 
+            color: white !important; border: 4px solid var(--bg-body); 
+            font-size: 22px !important; 
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2 class="header-title">ĐỘI NGŨ</h2>
+    </header>
+
+    <div class="container">
+        <div class="invite-card">
+            <span class="invite-label">Liên kết mời của bạn</span>
+            <div class="invite-code-box">
+                <span class="code-val" id="my-ref-code">PFT-888888</span>
+                <i class="fas fa-copy copy-icon" onclick="copyRef()"></i>
+            </div>
+            <p style="font-size: 11px; color: var(--text-dim);">Chia sẻ mã mời để nhận 10% hoa hồng từ số tiền bạn bè nạp mua máy đào.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <i class="fas fa-users"></i>
+                <span>Tuyến dưới</span>
+                <b id="total-ref">0</b>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-coins"></i>
+                <span>Hoa hồng</span>
+                <b id="total-comm">0.00 USDT</b>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <span>DANH SÁCH THÀNH VIÊN</span>
+            <i class="fas fa-filter" style="font-size: 12px; color: var(--text-dim);"></i>
+        </div>
+
+        <div class="team-container" id="team-list">
+            <div style="padding: 30px; text-align: center; color: var(--text-dim);">
+                <i class="fas fa-user-friends" style="font-size: 30px; opacity: 0.1; margin-bottom: 10px;"></i>
+                <p style="font-size: 12px;">Đang tải danh sách...</p>
+            </div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Trang Chủ</span>
+        </a>
+        <a href="market.html" class="nav-link">
+            <i class="fas fa-chart-line"></i>
+            <span>Thị Trường</span>
+        </a>
+        <div class="nav-center-wrapper">
+            <a href="mining.html" class="nav-center">
+                <i class="fas fa-bolt"></i>
+            </a>
+        </div>
+        <a href="affiliate.html" class="nav-link active">
+            <i class="fas fa-users"></i>
+            <span>Đội Ngũ</span>
+        </a>
+        <a href="profile.html" class="nav-link">
+            <i class="fas fa-wallet"></i>
+            <span>Ví Tiền</span>
+        </a>
+    </nav>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function initAffiliate() {
+            try {
+                const res = await fetch(`${API_BASE}/api/user/profile`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const user = await res.json();
+
+                if (user) {
+                    const code = user.referral_code || `PFT${user.uid}`;
+                    document.getElementById('my-ref-code').innerText = code;
+                    
+                    loadTeamMembers();
+                }
+            } catch (e) { console.error("Lỗi tải dữ liệu Affiliate"); }
+        }
+
+        async function loadTeamMembers() {
+            try {
+                const res = await fetch(`${API_BASE}/api/user/affiliate-stats`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                
+                document.getElementById('total-comm').innerText = data.total_commission.toFixed(2) + " USDT";
+                document.getElementById('total-ref').innerText = data.team.length;
+                
+                if (data.team.length > 0) {
+                    document.getElementById('team-list').innerHTML = data.team.map(m => {
+                        return `
+                            <div class="member-item">
+                                <div class="member-info">
+                                    <div class="member-avatar"><i class="fas fa-user"></i></div>
+                                    <div class="member-detail">
+                                        <b>UID: ${m.uid}</b>
+                                        <span>${m.email.replace(/(.{3})(.*)(@.*)/, "$1***$3")}</span>
+                                        <div style="font-size: 9px; color: var(--gold);">Đầu tư: ${parseFloat(m.total_investment || 0).toFixed(2)}$</div>
+                                    </div>
+                                </div>
+                                <div class="member-status">
+                                    <span class="status-badge">F1 (10%)</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    document.getElementById('team-list').innerHTML = `
+                        <div style="padding: 30px; text-align: center; color: var(--text-dim);">
+                            <i class="fas fa-user-friends" style="font-size: 30px; opacity: 0.1; margin-bottom: 10px;"></i>
+                            <p style="font-size: 12px;">Bạn chưa có thành viên nào.</p>
+                        </div>
+                    `;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function copyRef() {
+            const code = document.getElementById('my-ref-code').innerText;
+            const url = `${window.location.origin}/login-register.html?ref=${code}`;
+            const tempInput = document.createElement("input");
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            alert("Đã sao chép liên kết mời: " + url);
+        }
+
+        initAffiliate();
+    </script>
+</body>
+</html>
